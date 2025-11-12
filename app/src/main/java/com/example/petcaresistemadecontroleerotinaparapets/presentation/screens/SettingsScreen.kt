@@ -1,37 +1,41 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-// CORREÇÃO: Imports AutoMirrored
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
 
+/**
+ * Tela de Configurações.
+ * Permite ao usuário sair do aplicativo (Logout).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    onLogout: () -> Unit
+    onLogout: () -> Unit // (Vem da AppNavigation)
 ) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Configurações") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        // CORREÇÃO: Ícone
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
@@ -42,63 +46,30 @@ fun SettingsScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(16.dp)
         ) {
-            SettingItem(
-                title = "Ativar Notificações",
-                icon = Icons.Default.Notifications,
-                onClick = { notificationsEnabled = !notificationsEnabled }
-            ) {
-                Switch(
-                    checked = notificationsEnabled,
-                    onCheckedChange = { notificationsEnabled = it }
-                )
-            }
+            // TODO: Adicionar outras opções (ex: Tema Escuro, Gerenciar Notificações)
 
-            // CORREÇÃO: Renomeado para HorizontalDivider
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            SettingItem(
-                title = "Sair",
-                // CORREÇÃO: Ícone
-                icon = Icons.AutoMirrored.Filled.ExitToApp,
+            // --- Botão de Logout ---
+            Button(
                 onClick = {
-                    authViewModel.signOut()
-                    onLogout()
+                    authViewModel.signOut() // Chama o ViewModel
+                    onLogout() // Executa a navegação definida no AppNavigation
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Sair")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sair da Conta")
                 }
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingItem(
-    title: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    trailingContent: (@Composable () -> Unit)? = null
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        if (trailingContent != null) {
-            trailingContent()
+            }
         }
     }
 }

@@ -1,146 +1,161 @@
-package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
+package com.example.petcaresistemadecontroleerotinaparapets.presentation.navigation
 
-import android.widget.Toast
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-// IMPORT CORRETO (para o ícone "Voltar")
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
-import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
-import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
+// ... (todos os seus imports existentes) ...
+import com.example.petcaresistemadecontroleerotinaparapets.presentation.screens.ReportsScreen // <-- ADICIONE ESTE IMPORT
+import com.example.petcaresistemadecontroleerotinaparapets.presentation.screens.SignUpScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEventScreen(
-    // ✅ CORREÇÃO: Estes são os parâmetros que estavam faltando
-    petId: String?,
-    eventoViewModel: EventoViewModel,
-    authViewModel: AuthViewModel,
-    onEventSaved: () -> Unit
-) {
-    // Estados para os campos de entrada
-    var tipoEvento by remember { mutableStateOf("") }
-    var dataEvento by remember { mutableStateOf("") }
-    var observacoes by remember { mutableStateOf("") }
-    var isDropdownExpanded by remember { mutableStateOf(false) }
+fun AppNavigation() {
+    val navController = rememberNavController()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val petViewModel: PetViewModel = hiltViewModel()
+    val eventoViewModel: EventoViewModel = hiltViewModel()
 
-    val context = LocalContext.current
-    val petIdInt = petId?.toIntOrNull()
+    NavHost(navController = navController, startDestination = ScreenRoutes.Login.route) {
 
-    // Lista de tipos de evento
-    val eventTypes = listOf("Vacina", "Banho", "Consulta", "Medicação", "Passeio", "Alimentação")
+        // --- (Telas de Login, SignUp, MyPets, AddPet... sem mudança) ---
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Adicionar Evento") },
-                navigationIcon = {
-                    IconButton(onClick = onEventSaved) {
-                        // CORREÇÃO: Ícone AutoMirrored
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+        // --- Tela de Login ---
+        composable(ScreenRoutes.Login.route) {
+            LoginScreen(
+                authViewModel = authViewModel,
+                onLoginSuccess = {
+                    navController.navigate(ScreenRoutes.MyPets.route) {
+                        popUpTo(ScreenRoutes.Login.route) { inclusive = true }
+                    }
+                },
+                onSignUpClick = {
+                    navController.navigate(ScreenRoutes.SignUp.route)
+                }
+            )
+        }
+
+        // --- TELA DE CADASTRO (NOVA) ---
+        composable(ScreenRoutes.SignUp.route) {
+            SignUpScreen(
+                authViewModel = authViewModel,
+                onSignUpSuccess = {
+                    navController.navigate(ScreenRoutes.MyPets.route) {
+                        popUpTo(ScreenRoutes.Login.route) { inclusive = true }
+                    }
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- Tela Meus Pets ---
+        composable(ScreenRoutes.MyPets.route) {
+            MyPetsScreen(
+                petViewModel = petViewModel,
+                authViewModel = authViewModel,
+                onPetClick = { petId ->
+                    navController.navigate(ScreenRoutes.petDetail(petId))
+                },
+                onAddPetClick = {
+                    navController.navigate(ScreenRoutes.AddPet.route)
+                },
+                onSettingsClick = {
+                    navController.navigate(ScreenRoutes.Settings.route)
+                }
+            )
+        }
+
+        // --- Tela Adicionar Pet ---
+        composable(ScreenRoutes.AddPet.route) {
+            AddPetScreen(
+                petViewModel = petViewModel,
+                authViewModel = authViewModel,
+                onPetSaved = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- Tela Detalhes do Pet ---
+        composable(
+            route = ScreenRoutes.PetDetail.route,
+            arguments = listOf(navArgument("petId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            PetDetailScreen(
+                petId = backStackEntry.arguments?.getString("petId"),
+                navController = navController,
+                petViewModel = petViewModel,
+                eventoViewModel = eventoViewModel,
+                onAddEventClick = {
+                    val petId = backStackEntry.arguments?.getString("petId")
+                    if (petId != null) {
+                        navController.navigate(ScreenRoutes.addEvent(petId))
                     }
                 }
             )
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // --- Seletor de Tipo de Evento (Dropdown) ---
-            ExposedDropdownMenuBox(
-                expanded = isDropdownExpanded,
-                onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }
-            ) {
-                OutlinedTextField(
-                    value = tipoEvento,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Tipo de Evento *") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
-                )
 
-                ExposedDropdownMenu(
-                    expanded = isDropdownExpanded,
-                    onDismissRequest = { isDropdownExpanded = false }
-                ) {
-                    eventTypes.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(type) },
-                            onClick = {
-                                tipoEvento = type
-                                isDropdownExpanded = false
-                            }
-                        )
+        // --- Tela Adicionar Evento ---
+        composable(
+            route = ScreenRoutes.AddEvent.route,
+            arguments = listOf(navArgument("petId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            AddEventScreen(
+                petId = backStackEntry.arguments?.getString("petId"),
+                eventoViewModel = eventoViewModel,
+                authViewModel = authViewModel,
+                onEventSaved = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- Tela de Lembretes ---
+        composable(ScreenRoutes.Reminders.route) {
+            RemindersScreen(
+                navController = navController
+            )
+        }
+
+        // --- Tela de Configurações ---
+        composable(ScreenRoutes.Settings.route) {
+            SettingsScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                onLogout = {
+                    navController.navigate(ScreenRoutes.Login.route) {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
                 }
-            }
-
-            // --- Campo de Data ---
-            OutlinedTextField(
-                value = dataEvento,
-                onValueChange = { dataEvento = it },
-                label = { Text("Data * (ex: DD/MM/AAAA)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
             )
+        }
 
-            // --- Campo de Observações ---
-            OutlinedTextField(
-                value = observacoes,
-                onValueChange = { observacoes = it },
-                label = { Text("Observações (Opcional)") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
+        // --- TELA DE RELATÓRIOS (NOVA) ---
+        composable(
+            route = ScreenRoutes.Reports.route,
+            arguments = listOf(navArgument("petId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            ReportsScreen(
+                petId = backStackEntry.arguments?.getString("petId"),
+                navController = navController,
+                petViewModel = petViewModel,
+                eventoViewModel = eventoViewModel
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // --- Botão Salvar ---
-            Button(
-                onClick = {
-                    if (petIdInt == null) {
-                        Toast.makeText(context, "Erro: ID do pet inválido.", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (tipoEvento.isBlank() || dataEvento.isBlank()) {
-                        Toast.makeText(context, "Tipo e Data são obrigatórios.", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    val novoEvento = Evento(
-                        tipoEvento = tipoEvento,
-                        dataEvento = dataEvento,
-                        observacoes = observacoes.takeIf { it.isNotBlank() },
-                        petId = petIdInt,
-                        isSynced = false
-                    )
-
-                    eventoViewModel.adicionarEvento(novoEvento)
-
-                    Toast.makeText(context, "Evento '$tipoEvento' salvo!", Toast.LENGTH_SHORT).show()
-                    onEventSaved()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Salvar Evento")
-            }
         }
     }
+}
+
+
+object ScreenRoutes {
+    object Login { val route = "login_screen" }
+    object SignUp { val route = "signup_screen" }
+    object MyPets { val route = "my_pets_screen" }
+    object AddPet { val route = "add_pet_screen" }
+    object PetDetail { val route = "pet_detail_screen/{petId}" }
+    object AddEvent { val route = "add_event_screen/{petId}" }
+    object Reminders { val route = "reminders_screen" }
+    object Settings { val route = "settings_screen" }
+    object Reports { val route = "reports_screen/{petId}" } // <-- ROTA ADICIONADA
+
+    // Funções auxiliares para navegação com argumentos
+    fun petDetail(petId: String) = "pet_detail_screen/$petId"
+    fun addEvent(petId: String) = "add_event_screen/$petId"
+    fun reports(petId: String) = "reports_screen/$petId" // <-- FUNÇÃO ADICIONADA
 }

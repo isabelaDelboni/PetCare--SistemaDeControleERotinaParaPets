@@ -17,7 +17,8 @@ import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.LoginState
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onSignUpClick: () -> Unit // <-- PARÂMETRO ADICIONADO
 ) {
     val email by authViewModel.email
     val password by authViewModel.password
@@ -79,6 +80,13 @@ fun LoginScreen(
                 Text("Entrar")
             }
         }
-        // TODO: Adicionar botão de "Criar Conta"
+
+        Spacer(modifier = Modifier.height(16.dp)) // <-- Espaçador adicionado
+
+        // --- BOTÃO DE CRIAR CONTA ADICIONADO ---
+        TextButton(onClick = onSignUpClick) {
+            Text("Não tem uma conta? Criar cadastro")
+        }
+        // --- FIM DA ADIÇÃO ---
     }
 }

@@ -1,36 +1,51 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.petcaresistemadecontroleerotinaparapets.presentation.components.AppButton
-import com.example.petcaresistemadecontroleerotinaparapets.presentation.components.AppTextField
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 
+/**
+ * Tela para adicionar um novo evento (RF02).
+ * Implementa o formulário descrito no Ponto 5 ("Tela de Cadastro / Edição de Evento").
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEventScreen(navController: NavController) {
-    var title by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+fun AddEventScreen(
+    petId: String?,
+    eventoViewModel: EventoViewModel,
+    authViewModel: AuthViewModel, // (Pode ser usado para validações futuras)
+    onEventSaved: () -> Unit // (Vem da AppNavigation)
+) {
+    // Estados para os campos de entrada
+    var tipoEvento by remember { mutableStateOf("") }
+    var dataEvento by remember { mutableStateOf("") }
+    var observacoes by remember { mutableStateOf("") }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val petIdInt = petId?.toIntOrNull()
+
+    // Lista de tipos de evento (conforme Ponto 5 do plano)
+    val eventTypes = listOf("Vacina", "Banho", "Consulta", "Medicação", "Passeio", "Alimentação")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cadastrar Evento") },
+                title = { Text("Adicionar Evento") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                    IconButton(onClick = onEventSaved) { // 'onEventSaved' age como "Voltar"
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
             )
@@ -39,38 +54,96 @@ fun AddEventScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "Adicione um novo evento para o seu pet, como uma consulta, vacina ou banho.",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            // --- Seletor de Tipo de Evento (Dropdown) ---
+            ExposedDropdownMenuBox(
+                expanded = isDropdownExpanded,
+                onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }
+            ) {
+                OutlinedTextField(
+                    value = tipoEvento,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tipo de Evento *") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor() // Necessário para o Dropdown
+                )
 
-            AppTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = "Título do Evento"
-            )
-
-            AppTextField(
-                value = date,
-                onValueChange = { date = it },
-                label = "Data (ex: 25/12/2025)"
-            )
-
-            AppButton(
-                text = "Salvar Evento",
-                onClick = {
-                    if (title.isNotBlank() && date.isNotBlank()) {
-                        // Lógica para salvar o evento (ViewModel)
-                        Toast.makeText(context, "Evento '$title' salvo!", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
-                    } else {
-                        Toast.makeText(context, "Preencha todos os campos.", Toast.LENGTH_SHORT).show()
+                ExposedDropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { isDropdownExpanded = false }
+                ) {
+                    eventTypes.forEach { type ->
+                        DropdownMenuItem(
+                            text = { Text(type) },
+                            onClick = {
+                                tipoEvento = type
+                                isDropdownExpanded = false
+                            }
+                        )
                     }
                 }
+            }
+
+            // --- Campo de Data ---
+            OutlinedTextField(
+                value = dataEvento,
+                onValueChange = { dataEvento = it },
+                label = { Text("Data * (ex: DD/MM/AAAA)") }, // TODO: Usar um DatePicker no futuro
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
+
+            // --- Campo de Observações ---
+            OutlinedTextField(
+                value = observacoes,
+                onValueChange = { observacoes = it },
+                label = { Text("Observações (Opcional)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Botão Salvar ---
+            Button(
+                onClick = {
+                    if (petIdInt == null) {
+                        Toast.makeText(context, "Erro: ID do pet inválido.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (tipoEvento.isBlank() || dataEvento.isBlank()) {
+                        Toast.makeText(context, "Tipo e Data são obrigatórios.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    // Cria a entidade Evento
+                    val novoEvento = Evento(
+                        tipoEvento = tipoEvento,
+                        dataEvento = dataEvento,
+                        observacoes = observacoes.takeIf { it.isNotBlank() },
+                        petId = petIdInt,
+                        isSynced = false // Para o RF05
+                    )
+
+                    // Chama o ViewModel para salvar o evento
+                    eventoViewModel.adicionarEvento(novoEvento)
+
+                    Toast.makeText(context, "Evento '$tipoEvento' salvo!", Toast.LENGTH_SHORT).show()
+                    onEventSaved() // Navega de volta para PetDetailScreen
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Salvar Evento")
+            }
         }
     }
 }

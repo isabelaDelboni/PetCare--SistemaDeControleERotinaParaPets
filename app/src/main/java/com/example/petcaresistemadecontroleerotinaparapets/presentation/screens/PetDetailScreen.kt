@@ -5,60 +5,61 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BarChart // <-- ÍCONE ADICIONADO
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
-// Importa os ViewModels que o AppNavigation vai injetar
+import com.example.petcaresistemadecontroleerotinaparapets.presentation.navigation.ScreenRoutes // <-- IMPORT ADICIONADO
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetDetailScreen(
-    petId: String?, // Vem da rota como String
+    petId: String?,
+    navController: NavController,
     petViewModel: PetViewModel,
     eventoViewModel: EventoViewModel,
-    navController: NavController,
     onAddEventClick: () -> Unit
 ) {
-    // 1. Converte o ID para Int para usar no banco
     val petIdInt = petId?.toIntOrNull()
-
-    // 2. Observa as listas dos ViewModels
-    // Encontra o pet específico na lista de pets já carregada
-    val pets by petViewModel.pets.collectAsState()
-    val pet = pets.find { it.idPet == petIdInt }
-
-    // Observa a lista de eventos
+    val pet by petViewModel.selectedPet.collectAsState()
     val eventos by eventoViewModel.eventos.collectAsState()
 
-    // 3. Carrega os eventos para este pet específico
-    LaunchedEffect(key1 = petIdInt) {
+    LaunchedEffect(petIdInt) {
         if (petIdInt != null) {
-            eventoViewModel.carregarEventos(petIdInt)
+            petViewModel.carregarPetPorId(petIdInt)
+            eventoViewModel.carregarEventosDoPet(petIdInt)
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                // Mostra o nome do pet (ou "Carregando...")
                 title = { Text(pet?.nome ?: "Detalhes do Pet") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                    }
+                },
+                // --- BOTÃO DE RELATÓRIO ADICIONADO ---
+                actions = {
+                    IconButton(onClick = {
+                        if (petId != null) {
+                            navController.navigate(ScreenRoutes.reports(petId))
+                        }
+                    }) {
+                        Icon(Icons.Default.BarChart, contentDescription = "Relatórios do Pet")
                     }
                 }
+                // --- FIM DA ADIÇÃO ---
             )
         },
         floatingActionButton = {
@@ -67,45 +68,39 @@ fun PetDetailScreen(
             }
         }
     ) { padding ->
-        // 4. Se o pet não for encontrado (carregando ou erro), mostra um aviso
+        // ... (O resto da tela (LazyColumn) permanece o mesmo) ...
         if (pet == null) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                if (petId == null) {
-                    Text("Erro: ID do pet não encontrado.")
-                } else {
-                    CircularProgressIndicator()
-                }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         } else {
-            // 5. Se o pet for encontrado, exibe os detalhes
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .padding(padding)
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(16.dp)
             ) {
-                // --- Seção de Detalhes do Pet ---
-                Text("Informações do Pet", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 8.dp))
-                PetInfoRow(label = "Espécie:", value = pet.especie)
-                pet.raca?.let { PetInfoRow(label = "Raça:", value = it) }
-                pet.idade?.let { PetInfoRow(label = "Idade:", value = it.toString()) }
-
-                Divider(modifier = Modifier.padding(vertical = 24.dp))
-
-                // --- Seção de Eventos ---
-                Text("Próximos Eventos", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 16.dp))
-
-                if (eventos.isEmpty()) {
+                item {
+                    PetInfoCard(pet!!)
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        "Nenhum evento cadastrado para ${pet.nome}. \nClique no '+' para adicionar.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        "Próximos Eventos",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                if (eventos.isEmpty()) {
+                    item {
+                        Text(
+                            "Nenhum evento cadastrado para este pet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(eventos) { evento ->
-                            EventCard(evento = evento)
-                        }
+                    items(eventos, key = { it.eventoId }) { evento ->
+                        EventoCard(evento)
                     }
                 }
             }
@@ -113,53 +108,76 @@ fun PetDetailScreen(
     }
 }
 
-/**
- * Um Composable privado para exibir uma linha de informação do pet.
- */
+// ... (PetInfoCard, EventoCard, InfoLinha permanecem os mesmos) ...
 @Composable
-private fun PetInfoRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.width(80.dp)
-        )
-        Text(text = value, style = MaterialTheme.typography.bodyLarge)
+private fun PetInfoCard(pet: Pet) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = pet.nome,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            InfoLinha(label = "Espécie:", valor = pet.especie)
+            InfoLinha(label = "Raça:", valor = pet.raca)
+            InfoLinha(label = "Idade:", valor = "${pet.idade} anos")
+        }
     }
 }
 
-/**
- * Um Composable privado para exibir o card de cada evento.
- */
 @Composable
-private fun EventCard(evento: Evento) {
+private fun EventoCard(evento: Evento) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = Icons.Filled.Event,
-                contentDescription = "Evento",
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(evento.tipoEvento, style = MaterialTheme.typography.titleMedium)
-                Text(evento.dataEvento, style = MaterialTheme.typography.bodyMedium)
-                evento.observacoes?.let {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = evento.tipoEvento,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                if (evento.observacoes != null) {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 4.dp)
+                        text = evento.observacoes,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+            Text(
+                text = evento.dataEvento,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
+    }
+}
+
+@Composable
+private fun InfoLinha(label: String, valor: String) {
+    Row {
+        Text(
+            text = label,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.width(80.dp)
+        )
+        Text(text = valor)
     }
 }

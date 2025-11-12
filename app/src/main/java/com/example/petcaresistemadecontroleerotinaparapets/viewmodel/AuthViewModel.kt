@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    // 1. Injeta o Serviço de Autenticação, que sabe como logar
+    // 1. Injeta o Serviço de Autenticação
     private val authService: FirebaseAuthService
 ) : ViewModel() {
 
@@ -37,6 +37,33 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    // --- FUNÇÃO SIGNUP CORRIGIDA ---
+    fun signUp() {
+        // Validação simples
+        if (email.value.isBlank() || password.value.isBlank()) {
+            loginState.value = LoginState.Error("Email e Senha não podem estar vazios.")
+            return
+        }
+
+        loginState.value = LoginState.Loading
+
+        // ✅ CORREÇÃO: Usando viewModelScope para chamar a suspend fun 'signUp'
+        viewModelScope.launch {
+            // ✅ CORREÇÃO: Chamando a função 'signUp' do serviço, que retorna um Result
+            val result = authService.signUp(email.value, password.value) //
+
+            result.onSuccess {
+                // Sucesso! O LaunchedEffect na tela de SignUp irá capturar isso.
+                loginState.value = LoginState.Success
+            }.onFailure { exception ->
+                // Erro
+                // ✅ CORREÇÃO: 'exception.message' agora é válido
+                loginState.value = LoginState.Error(exception.message ?: "Erro ao criar conta.")
+            }
+        }
+    }
+    // --- FIM DA CORREÇÃO ---
+
     fun getCurrentUser() = authService.getCurrentUser()
 
     fun signOut() {
@@ -45,7 +72,7 @@ class AuthViewModel @Inject constructor(
     }
 }
 
-// 3. (Opcional) Classe para representar os estados do Login
+// 3. Classe para representar os estados
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()

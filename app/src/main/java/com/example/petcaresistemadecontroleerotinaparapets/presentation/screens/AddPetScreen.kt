@@ -6,43 +6,46 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-// IMPORT CORRETO (para o ícone "Voltar")
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPetScreen(
     petViewModel: PetViewModel,
-    authViewModel: AuthViewModel,
-    onPetSaved: () -> Unit // Função de callback para navegar de volta
+    authViewModel: AuthViewModel, // (Pode ser usado para ID do usuário, mas o ViewModel já o obtém)
+    onPetSaved: () -> Unit
 ) {
-    // Estados para controlar os campos de texto
+    // Estados para os campos de texto
     var nome by remember { mutableStateOf("") }
     var especie by remember { mutableStateOf("") }
     var raca by remember { mutableStateOf("") }
     var idade by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val currentUser = authViewModel.getCurrentUser()
+    val uiState by petViewModel.uiState.collectAsState()
+
+    // Observa o estado da UI para feedback
+    LaunchedEffect(uiState) {
+        if (uiState is PetUiState.Error) {
+            Toast.makeText(context, (uiState as PetUiState.Error).message, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Adicionar Novo Pet") },
                 navigationIcon = {
-                    // Botão para voltar (chama o onPetSaved, que no Nav é popBackStack)
-                    IconButton(onClick = onPetSaved) {
-                        // CORREÇÃO: Ícone AutoMirrored
+                    IconButton(onClick = onPetSaved) { // 'onPetSaved' aqui age como "Voltar"
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
@@ -53,83 +56,55 @@ fun AddPetScreen(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Permite rolar se a tela for pequena
+                .verticalScroll(rememberScrollState()), // Permite rolar se os campos não couberem
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "Preencha as informações do seu pet:",
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text("Insira os dados do seu pet", style = MaterialTheme.typography.titleMedium)
 
-            // Campo Nome
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
                 label = { Text("Nome *") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true
             )
 
-            // Campo Espécie
             OutlinedTextField(
                 value = especie,
                 onValueChange = { especie = it },
                 label = { Text("Espécie * (ex: Cachorro, Gato)") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true
             )
 
-            // Campo Raça
             OutlinedTextField(
                 value = raca,
                 onValueChange = { raca = it },
-                label = { Text("Raça (Opcional)") },
+                label = { Text("Raça (ex: SRD, Poodle)") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true
             )
 
-            // Campo Idade
             OutlinedTextField(
                 value = idade,
                 onValueChange = { idade = it },
-                label = { Text("Idade (Opcional)") },
+                label = { Text("Idade") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão Salvar
             Button(
                 onClick = {
-                    // Validação dos dados
-                    if (nome.isBlank() || especie.isBlank()) {
-                        Toast.makeText(context, "Nome e Espécie são obrigatórios.", Toast.LENGTH_SHORT).show()
-                    } else if (currentUser == null) {
-                        Toast.makeText(context, "Erro: Usuário não encontrado.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // 1. Cria o objeto Pet
-                        val novoPet = Pet(
-                            nome = nome,
-                            especie = especie,
-                            raca = raca.takeIf { it.isNotBlank() }, // Salva null se estiver em branco
-                            idade = idade.toIntOrNull(), // Converte para Int ou null
-                            usuarioId = currentUser.uid // Pega o ID do Firebase
-                        )
+                    // Chama o ViewModel para adicionar o pet
+                    petViewModel.addPet(nome, especie, raca, idade)
 
-                        // 2. Chama o ViewModel para salvar
-                        petViewModel.adicionarPet(novoPet)
-
-                        // 3. Mostra feedback e navega de volta
-                        Toast.makeText(context, "$nome salvo com sucesso!", Toast.LENGTH_SHORT).show()
-                        onPetSaved() // Chama a navegação de volta
+                    // Se a validação do ViewModel passar (não for Error), volta
+                    if (nome.isNotBlank() && especie.isNotBlank()) {
+                        Toast.makeText(context, "$nome salvo!", Toast.LENGTH_SHORT).show()
+                        onPetSaved() // Navega de volta
                     }
                 },
                 modifier = Modifier.fillMaxWidth()

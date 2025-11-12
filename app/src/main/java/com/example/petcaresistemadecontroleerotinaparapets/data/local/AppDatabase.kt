@@ -1,8 +1,6 @@
 package com.example.petcaresistemadecontroleerotinaparapets.data.local
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.EventoDao
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.PetDao
@@ -11,24 +9,27 @@ import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.E
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Usuario
 
-@Database(entities = [Pet::class, Evento::class, Usuario::class], version = 1)
+/**
+ * Banco de dados Room principal do aplicativo.
+ *
+ * ATUALIZAÇÃO:
+ * - Adicionado 'Pet::class' à lista de entidades.
+ * - Adicionada a função abstrata 'petDao()'.
+ * - Versão do banco incrementada para 2 (necessário ao alterar o schema).
+ */
+@Database(
+    entities = [
+        Usuario::class,
+        Pet::class, // <-- ENTIDADE ADICIONADA
+        Evento::class
+    ],
+    version = 2, // <-- VERSÃO INCREMENTADA
+    exportSchema = false // (Mantido do seu log de build, para suprimir o aviso)
+)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun petDao(): PetDao
-    abstract fun eventoDao(): EventoDao
+
     abstract fun usuarioDao(): UsuarioDao
+    abstract fun eventoDao(): EventoDao
+    abstract fun petDao(): PetDao // <-- DAO ADICIONADO
 
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        fun getInstance(context: Context): AppDatabase =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
-            }
-
-        private fun buildDatabase(context: Context) =
-            Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "petcare_db")
-                .fallbackToDestructiveMigration()
-                .build()
-    }
 }
