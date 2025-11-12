@@ -11,8 +11,7 @@ data class Evento(
     val dataEvento: String,
     val observacoes: String?,
     val petId: Int,
-    val isSynced: Boolean = false,
+    val isSynced: Boolean = false
 
-    // ✅ CAMPO ADICIONADO (RF06)
-    val valor: Double? = null // Usado para Peso (kg) ou outros valores numéricos
+    // ❌ O campo 'valor: Double?' foi REMOVIDO
 )

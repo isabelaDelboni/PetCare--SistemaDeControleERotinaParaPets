@@ -9,20 +9,27 @@ import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.E
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Usuario
 
+/**
+ * Banco de dados Room principal do aplicativo.
+ *
+ * ATUALIZAÇÃO:
+ * - Adicionado 'Pet::class' à lista de entidades.
+ * - Adicionada a função abstrata 'petDao()'.
+ * - Versão do banco incrementada para 2 (necessário ao alterar o schema).
+ */
 @Database(
     entities = [
         Usuario::class,
-        Pet::class,
+        Pet::class, // <-- ENTIDADE ADICIONADA
         Evento::class
     ],
-    // ✅ VERSÃO INCREMENTADA DE 2 PARA 3 (devido à adição do campo 'valor' no Evento)
-    version = 3,
-    exportSchema = false
+    version = 2, // <-- VERSÃO INCREMENTADA
+    exportSchema = false // (Mantido do seu log de build, para suprimir o aviso)
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun usuarioDao(): UsuarioDao
     abstract fun eventoDao(): EventoDao
-    abstract fun petDao(): PetDao
+    abstract fun petDao(): PetDao // <-- DAO ADICIONADO
 
 }

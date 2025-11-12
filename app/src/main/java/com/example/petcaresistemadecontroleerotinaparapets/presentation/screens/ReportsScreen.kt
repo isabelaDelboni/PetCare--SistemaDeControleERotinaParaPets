@@ -1,6 +1,6 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
-import androidx.compose.foundation.layout.Arrangement
+/*import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetViewModel
-// ✅ IMPORTS DO VICO ADICIONADOS
+// ✅ IMPORTS DO VICO (Estão corretos)
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -31,7 +31,8 @@ import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 import com.example.petcaresistemadecontroleerotinaparapets.utils.DateConverter
-// --- FIM DA ADIÇÃO ---
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,26 +55,19 @@ fun ReportsScreen(
     }
 
     // --- LÓGICA DO GRÁFICO (RF06) ---
-
-    // 1. Filtra apenas eventos de "Peso" que tenham um valor
     val dadosDePeso = eventos.filter { it.tipoEvento == "Peso" && it.valor != null }
 
-    // 2. Prepara os dados para o gráfico Vico
-    // (Converte a lista de eventos de peso em entradas de gráfico)
     val chartEntryModelProducer = ChartEntryModelProducer(
         dadosDePeso.mapNotNull { evento ->
-            // Usa o DateConverter para o eixo X
             val timestamp = DateConverter.parseDateToTimestamp(evento.dataEvento)
             if (timestamp != null) {
-                // X = Data (como um número), Y = Peso
                 entryOf(timestamp.toFloat(), evento.valor!!.toFloat())
             } else {
                 null
             }
-        }.sortedBy { it.x } // Garante que as datas estejam em ordem
+        }.sortedBy { it.x }
     )
 
-    // 3. Processa os dados de estatísticas (contagem)
     val estatisticasEventos = eventos
         .groupBy { it.tipoEvento }
         .mapValues { it.value.size }
@@ -153,9 +147,8 @@ fun ReportsScreen(
                         startAxis = rememberStartAxis(title = "Peso (kg)"),
                         bottomAxis = rememberBottomAxis(
                             title = "Data",
-                            // Converte o timestamp (Float) de volta para uma data legível
                             valueFormatter = { value, _ ->
-                                // Simplificado - idealmente formataria a data
+                                // TODO: Formatar a data corretamente
                                 (value.toLong() / 86400000).toString() // Mostra o dia
                             }
                         ),
@@ -185,4 +178,4 @@ private fun EstatisticaRow(label: String, valor: String) {
             color = MaterialTheme.colorScheme.primary
         )
     }
-}
+}*/

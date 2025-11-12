@@ -157,7 +157,7 @@ fun AddEventScreen(
                         petId = petIdInt,
                         isSynced = false,
                         // ✅ ADICIONADO O VALOR
-                        valor = if (tipoEvento == "Peso") valorDouble else null
+                        /*valor = if (tipoEvento == "Peso") valorDouble else null*/
                     )
 
                     eventoViewModel.adicionarEvento(novoEvento)

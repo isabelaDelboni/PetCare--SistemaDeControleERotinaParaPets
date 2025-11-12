@@ -140,7 +140,7 @@ fun AppNavigation() {
         }
 
         // --- TELA DE RELATÓRIOS (NOVA) ---
-        composable(
+        /*composable(
             route = ScreenRoutes.Reports.route,
             arguments = listOf(navArgument("petId") { type = NavType.StringType })
         ) { backStackEntry ->
@@ -150,7 +150,7 @@ fun AppNavigation() {
                 petViewModel = petViewModel,
                 eventoViewModel = eventoViewModel
             )
-        }
+        }*/
     }
 }
 // ... (O objeto ScreenRoutes permanece o mesmo) ...
