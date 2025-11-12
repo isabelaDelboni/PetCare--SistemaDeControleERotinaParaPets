@@ -1,19 +1,31 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.navigation
 
-// ... (todos os seus imports existentes) ...
-import com.example.petcaresistemadecontroleerotinaparapets.presentation.screens.ReportsScreen // <-- ADICIONE ESTE IMPORT
-import com.example.petcaresistemadecontroleerotinaparapets.presentation.screens.SignUpScreen
+// ✅ --- IMPORTS ADICIONADOS ---
+import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+// --- FIM DA ADIÇÃO ---
+
+// ... (seus imports de ViewModels e Telas existentes) ...
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.presentation.screens.*
+
 
 @Composable
 fun AppNavigation() {
+    // ... (O resto do arquivo está correto e não precisa de mudanças) ...
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val petViewModel: PetViewModel = hiltViewModel()
     val eventoViewModel: EventoViewModel = hiltViewModel()
 
     NavHost(navController = navController, startDestination = ScreenRoutes.Login.route) {
-
-        // --- (Telas de Login, SignUp, MyPets, AddPet... sem mudança) ---
 
         // --- Tela de Login ---
         composable(ScreenRoutes.Login.route) {
@@ -141,8 +153,7 @@ fun AppNavigation() {
         }
     }
 }
-
-
+// ... (O objeto ScreenRoutes permanece o mesmo) ...
 object ScreenRoutes {
     object Login { val route = "login_screen" }
     object SignUp { val route = "signup_screen" }
@@ -152,10 +163,10 @@ object ScreenRoutes {
     object AddEvent { val route = "add_event_screen/{petId}" }
     object Reminders { val route = "reminders_screen" }
     object Settings { val route = "settings_screen" }
-    object Reports { val route = "reports_screen/{petId}" } // <-- ROTA ADICIONADA
+    object Reports { val route = "reports_screen/{petId}" }
 
     // Funções auxiliares para navegação com argumentos
     fun petDetail(petId: String) = "pet_detail_screen/$petId"
     fun addEvent(petId: String) = "add_event_screen/$petId"
-    fun reports(petId: String) = "reports_screen/$petId" // <-- FUNÇÃO ADICIONADA
+    fun reports(petId: String) = "reports_screen/$petId"
 }

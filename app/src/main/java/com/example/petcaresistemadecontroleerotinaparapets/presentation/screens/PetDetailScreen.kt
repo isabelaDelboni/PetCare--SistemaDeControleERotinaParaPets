@@ -1,24 +1,28 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
+import android.widget.Toast // <-- IMPORT ADICIONADO
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.BarChart // <-- ÍCONE ADICIONADO
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Delete // <-- IMPORT ADICIONADO
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext // <-- IMPORT ADICIONADO
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
-import com.example.petcaresistemadecontroleerotinaparapets.presentation.navigation.ScreenRoutes // <-- IMPORT ADICIONADO
+import com.example.petcaresistemadecontroleerotinaparapets.presentation.navigation.ScreenRoutes
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.PetViewModel
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +36,26 @@ fun PetDetailScreen(
     val petIdInt = petId?.toIntOrNull()
     val pet by petViewModel.selectedPet.collectAsState()
     val eventos by eventoViewModel.eventos.collectAsState()
+    val context = LocalContext.current // <-- ADICIONADO
+
+    // --- LÓGICA DE EXCLUSÃO (RF01) ---
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog && pet != null) {
+        DeleteConfirmationDialog(
+            petName = pet!!.nome,
+            onConfirm = {
+                petViewModel.deletePet(pet!!)
+                showDeleteDialog = false
+                Toast.makeText(context, "${pet!!.nome} foi excluído.", Toast.LENGTH_SHORT).show()
+                navController.popBackStack() // Volta para a tela 'Meus Pets'
+            },
+            onDismiss = {
+                showDeleteDialog = false
+            }
+        )
+    }
+    // --- FIM DA LÓGICA DE EXCLUSÃO ---
 
     LaunchedEffect(petIdInt) {
         if (petIdInt != null) {
@@ -49,8 +73,8 @@ fun PetDetailScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
-                // --- BOTÃO DE RELATÓRIO ADICIONADO ---
                 actions = {
+                    // --- BOTÃO DE RELATÓRIOS (EXISTENTE) ---
                     IconButton(onClick = {
                         if (petId != null) {
                             navController.navigate(ScreenRoutes.reports(petId))
@@ -58,8 +82,19 @@ fun PetDetailScreen(
                     }) {
                         Icon(Icons.Default.BarChart, contentDescription = "Relatórios do Pet")
                     }
+
+                    // --- BOTÃO DE EXCLUIR (NOVO) ---
+                    IconButton(onClick = {
+                        showDeleteDialog = true // Abre o diálogo de confirmação
+                    }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Excluir Pet",
+                            tint = MaterialTheme.colorScheme.error // Dá destaque
+                        )
+                    }
+                    // --- FIM DA ADIÇÃO ---
                 }
-                // --- FIM DA ADIÇÃO ---
             )
         },
         floatingActionButton = {
@@ -90,6 +125,7 @@ fun PetDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
                 if (eventos.isEmpty()) {
                     item {
                         Text(
@@ -99,7 +135,7 @@ fun PetDetailScreen(
                         )
                     }
                 } else {
-                    items(eventos, key = { it.eventoId }) { evento ->
+                    items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(evento)
                     }
                 }
@@ -107,6 +143,37 @@ fun PetDetailScreen(
         }
     }
 }
+
+// --- DIÁLOGO DE CONFIRMAÇÃO (NOVO) ---
+@Composable
+private fun DeleteConfirmationDialog(
+    petName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Excluir Pet") },
+        text = { Text("Tem certeza que deseja excluir $petName? Esta ação não pode ser desfeita.") },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Excluir")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+// --- FIM DA ADIÇÃO ---
+
 
 // ... (PetInfoCard, EventoCard, InfoLinha permanecem os mesmos) ...
 @Composable

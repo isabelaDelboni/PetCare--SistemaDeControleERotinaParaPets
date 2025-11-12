@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -21,25 +24,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento // ✅ IMPORT ADICIONADO
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 
-/**
- * Tela de Lembretes (RF03, RF04).
- * Exibe todos os eventos futuros.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersScreen(
     navController: NavController,
-    // O ViewModel é injetado diretamente aqui via Hilt
     eventoViewModel: EventoViewModel = hiltViewModel()
 ) {
-    // Observa a lista de TODOS os eventos
     val eventos by eventoViewModel.todosOsEventos.collectAsState()
 
-    // Carrega os eventos quando a tela é iniciada
     LaunchedEffect(Unit) {
         eventoViewModel.carregarTodosOsEventos()
     }
@@ -78,7 +76,6 @@ fun RemindersScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Agrupamento simples (ex: por tipo) - pode ser refinado
                     item {
                         Text(
                             "Próximos Eventos",
@@ -87,9 +84,8 @@ fun RemindersScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    items(eventos, key = { it.eventoId }) { evento ->
-                        // Reutilizando o EventoCard da PetDetailScreen
-                        // (Idealmente, este card estaria num arquivo 'components' compartilhado)
+                    // ✅ CORREÇÃO: 'idEvento'
+                    items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(evento)
                     }
                 }
@@ -98,12 +94,8 @@ fun RemindersScreen(
     }
 }
 
-/**
- * Componente de Card de Evento.
- * TODO: Mover este Composable para 'presentation/components' para ser reutilizado.
- */
 @Composable
-private fun EventoCard(evento: com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento) {
+private fun EventoCard(evento: Evento) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

@@ -18,33 +18,34 @@ import javax.inject.Inject
 @HiltViewModel
 class EventoViewModel @Inject constructor(
     private val eventoRepository: EventoRepository,
-    @ApplicationContext private val context: Context // <-- INJETANDO O CONTEXTO
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    // --- ADICIONADO ---
-    // Instancia o Agendador de Notificações
     private val scheduler = NotificationScheduler(context)
-    // --- FIM DA ADIÇÃO ---
 
+    // (Para PetDetailScreen)
     private val _eventos = MutableStateFlow<List<Evento>>(emptyList())
     val eventos: StateFlow<List<Evento>> = _eventos.asStateFlow()
 
+    // (Para RemindersScreen)
     private val _todosOsEventos = MutableStateFlow<List<Evento>>(emptyList())
     val todosOsEventos: StateFlow<List<Evento>> = _todosOsEventos.asStateFlow()
 
     private val _uiState = MutableStateFlow<EventoUiState>(EventoUiState.Idle)
     val uiState: StateFlow<EventoUiState> = _uiState.asStateFlow()
 
-    /**
-     * Adiciona um novo evento E AGENDA A NOTIFICAÇÃO (RF04).
-     */
+    // ✅ ADIÇÃO:
+    // Inicia a coleta de TODOS os eventos (para a tela de Lembretes)
+    // assim que o ViewModel é criado.
+    init {
+        carregarTodosOsEventos()
+    }
+    // --- FIM DA ADIÇÃO ---
+
     fun adicionarEvento(evento: Evento) {
         viewModelScope.launch {
             eventoRepository.adicionarEvento(evento)
-
-            // --- LÓGICA DE AGENDAMENTO (RF04) ---
             scheduler.scheduleNotification(evento)
-            // --- FIM DA ADIÇÃO ---
         }
     }
 
@@ -62,18 +63,23 @@ class EventoViewModel @Inject constructor(
         }
     }
 
+    // (Esta função agora é chamada pelo init)
     fun carregarTodosOsEventos() {
         viewModelScope.launch {
             _uiState.value = EventoUiState.Loading
-            // (Esta função ainda precisa ser criada no EventoRepository)
-            // eventoRepository.getAllEventosDoUsuario()
-            //     .catch { ... }
-            //     .collect { ... }
+            eventoRepository.getAllEventosDoUsuario()
+                .catch { e ->
+                    _uiState.value = EventoUiState.Error(e.message ?: "Erro ao carregar lembretes")
+                }
+                .collect { listaDeEventos ->
+                    _todosOsEventos.value = listaDeEventos
+                    _uiState.value = EventoUiState.Success
+                }
         }
     }
 }
 
-// (Classe de estado da UI permanece a mesma)
+// (Classe de estado da UI)
 sealed class EventoUiState {
     object Idle : EventoUiState()
     object Loading : EventoUiState()

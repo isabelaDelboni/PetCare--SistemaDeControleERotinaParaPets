@@ -8,8 +8,11 @@ data class Evento(
     @PrimaryKey(autoGenerate = true)
     val idEvento: Int = 0,
     val tipoEvento: String,
-    val dataEvento: String,       // ISO string ou timestamp como preferir
+    val dataEvento: String,
     val observacoes: String?,
     val petId: Int,
-    val isSynced: Boolean = false
+    val isSynced: Boolean = false,
+
+    // ✅ CAMPO ADICIONADO (RF06)
+    val valor: Double? = null // Usado para Peso (kg) ou outros valores numéricos
 )

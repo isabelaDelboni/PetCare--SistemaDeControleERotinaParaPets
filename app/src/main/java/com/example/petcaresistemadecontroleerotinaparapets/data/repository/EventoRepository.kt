@@ -2,29 +2,40 @@ package com.example.petcaresistemadecontroleerotinaparapets.data.repository
 
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.EventoDao
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.petcaresistemadecontroleerotinaparapets.data.remote.FirebaseAuthService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+// ✅ IMPORTS ADICIONADOS
+import kotlinx.coroutines.flow.flatMapLatest
+// FIM DA ADIÇÃO
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class EventoRepository(
+@Singleton
+class EventoRepository @Inject constructor(
     private val eventoDao: EventoDao,
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val authService: FirebaseAuthService
 ) {
-    suspend fun addEvento(evento: Evento) {
-        eventoDao.insert(evento.copy(isSynced = false))
-        try {
-            firestore.collection("users")
-                .document(/* precisa do usuarioId; passe via evento ou contexto */ "uid")
-                .collection("pets")
-                .document(evento.petId.toString())
-                .collection("events")
-                .add(evento)
-        } catch (e: Exception) {
-            // sem internet -> fica no Room
-        }
+
+    fun getEventosDoPet(petId: Int): Flow<List<Evento>> {
+        return eventoDao.getEventosDoPet(petId)
     }
 
-    suspend fun getEventosByPet(petId: Int): List<Evento> =
-        eventoDao.getEventosByPet(petId)
+    suspend fun adicionarEvento(evento: Evento) {
+        eventoDao.insertEvento(evento)
+    }
 
-    suspend fun getUnsyncedEventos(): List<Evento> =
-        eventoDao.getUnsyncedEventos()
+    /**
+     * Busca todos os eventos (para RF03).
+     * ✅ CORREÇÃO: Aplicando o mesmo padrão reativo do PetRepository.
+     */
+    fun getAllEventosDoUsuario(): Flow<List<Evento>> {
+        return authService.getUserIdFlow().flatMapLatest { userId ->
+            if (userId == null) {
+                flowOf(emptyList())
+            } else {
+                eventoDao.getAllEventosDoUsuario(userId)
+            }
+        }
+    }
 }

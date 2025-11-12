@@ -3,21 +3,22 @@ package com.example.petcaresistemadecontroleerotinaparapets.data.remote
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
+// ✅ IMPORTS ADICIONADOS
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+// FIM DA ADIÇÃO
 
 class FirebaseAuthService {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    // Retorna o usuário atual ou null se não estiver logado
+    // (As funções getCurrentUser, getCurrentUserId, signIn, signUp, signOut permanecem iguais)
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
-
-    // Retorna o UID do usuário (necessário para o caminho no Firestore)
     fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
     }
-
-    // Login
     suspend fun signIn(email: String, password: String): Result<FirebaseUser?> {
         return try {
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
@@ -26,8 +27,6 @@ class FirebaseAuthService {
             Result.failure(e)
         }
     }
-
-    // Cadastro
     suspend fun signUp(email: String, password: String): Result<FirebaseUser?> {
         return try {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
@@ -36,9 +35,25 @@ class FirebaseAuthService {
             Result.failure(e)
         }
     }
-
-    // Logout
     fun signOut() {
         auth.signOut()
+    }
+    // ✅ FUNÇÃO ADICIONADA
+    /**
+     * Observa o estado de autenticação em tempo real.
+     * Emite o UID do usuário (String) ou null se deslogado.
+     */
+    fun getUserIdFlow(): Flow<String?> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { auth ->
+            // Tenta enviar o UID do usuário atual
+            trySend(auth.currentUser?.uid)
+        }
+        // Adiciona o listener
+        auth.addAuthStateListener(listener)
+
+        // Quando o Flow for cancelado (ex: ViewModel destruído), remove o listener
+        awaitClose {
+            auth.removeAuthStateListener(listener)
+        }
     }
 }

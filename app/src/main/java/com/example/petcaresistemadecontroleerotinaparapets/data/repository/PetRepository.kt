@@ -5,50 +5,43 @@ import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.P
 import com.example.petcaresistemadecontroleerotinaparapets.data.remote.FirebaseAuthService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+// ✅ IMPORTS ADICIONADOS
+import kotlinx.coroutines.flow.flatMapLatest
+// FIM DA ADIÇÃO
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Repositório para a entidade Pet.
- * Segue o padrão de arquitetura (MVVM + Repository) do seu plano.
- *
- * Responsável por gerenciar a busca, inserção, atualização e exclusão de pets,
- * abstraindo a origem dos dados (Room ou Firebase).
- *
- * @param petDao O DAO para acesso ao banco de dados Room.
- * @param authService O serviço de autenticação para obter o ID do usuário.
- */
-@Singleton // Garante que haja apenas uma instância deste repositório no app
+@Singleton
 class PetRepository @Inject constructor(
     private val petDao: PetDao,
     private val authService: FirebaseAuthService
-    // TODO: Futuramente, injetar aqui o serviço do Firebase Firestore
 ) {
 
     /**
-     * Busca a lista de pets do usuário logado.
-     * Retorna um Flow para reatividade (local-first).
+     * Busca a lista de pets do usuário logado de forma reativa.
+     * ✅ CORREÇÃO: Agora usa flatMapLatest para "trocar" o Flow de usuário
+     * pelo Flow de pets assim que o usuário fizer login.
      */
     fun getPets(): Flow<List<Pet>> {
-        val userId = authService.getCurrentUserId()
-        if (userId == null) {
-            // Se o usuário não estiver logado, retorna um fluxo vazio.
-            return flowOf(emptyList())
+        return authService.getUserIdFlow().flatMapLatest { userId ->
+            if (userId == null) {
+                // Usuário deslogado, emite uma lista vazia
+                flowOf(emptyList())
+            } else {
+                // Usuário logado, emite a lista de pets do banco (que atualiza sozinha)
+                petDao.getPetsByUserId(userId)
+            }
         }
-        return petDao.getPetsByUserId(userId)
     }
 
-    /**
-     * Busca um único pet pelo seu ID.
-     */
+    // (O resto do arquivo: getPetById, addPet, updatePet, deletePet... pode ficar igual)
+    // A função addPet() usa 'getCurrentUserId()', o que está correto,
+    // pois o usuário JÁ ESTARÁ logado quando clicar em "salvar".
+
     suspend fun getPetById(petId: Int): Pet? {
         return petDao.getPetById(petId)
     }
 
-    /**
-     * Adiciona um novo pet.
-     * Conforme o plano "local-first", ele insere no Room.
-     */
     suspend fun addPet(nome: String, especie: String, raca: String, idade: Int) {
         val userId = authService.getCurrentUserId()
         if (userId != null) {
@@ -58,33 +51,20 @@ class PetRepository @Inject constructor(
                 especie = especie,
                 raca = raca,
                 idade = idade,
-                isSynced = false // Marcar como não sincronizado (para o RF05)
+                isSynced = false
             )
             petDao.insertPet(newPet)
-
-            // TODO: Adicionar lógica de sincronização com o Firestore aqui.
-            // Ex: firestoreService.addPet(newPet)
-            // Se sucesso -> petDao.updatePet(newPet.copy(isSynced = true))
+            // TODO: Sincronização com Firestore
         }
-        // (Você pode querer tratar o 'else' com um erro)
     }
 
-    /**
-     * Atualiza um pet existente.
-     */
     suspend fun updatePet(pet: Pet) {
-        // Marca como não sincronizado para forçar a atualização no Firebase
         petDao.updatePet(pet.copy(isSynced = false))
-
-        // TODO: Adicionar lógica de sincronização com o Firestore
+        // TODO: Sincronização com Firestore
     }
 
-    /**
-     * Deleta um pet.
-     */
     suspend fun deletePet(pet: Pet) {
         petDao.deletePet(pet)
-
-        // TODO: Adicionar lógica de sincronização com o Firestore (deleção)
+        // TODO: Sincronização com Firestore
     }
 }

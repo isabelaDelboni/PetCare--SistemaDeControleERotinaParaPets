@@ -1,8 +1,10 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility // ✅ IMPORT ADICIONADO
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions // ✅ IMPORT ADICIONADO
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,41 +12,40 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType // ✅ IMPORT ADICIONADO
 import androidx.compose.ui.unit.dp
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.AuthViewModel
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 
-/**
- * Tela para adicionar um novo evento (RF02).
- * Implementa o formulário descrito no Ponto 5 ("Tela de Cadastro / Edição de Evento").
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEventScreen(
     petId: String?,
     eventoViewModel: EventoViewModel,
-    authViewModel: AuthViewModel, // (Pode ser usado para validações futuras)
-    onEventSaved: () -> Unit // (Vem da AppNavigation)
+    authViewModel: AuthViewModel,
+    onEventSaved: () -> Unit
 ) {
-    // Estados para os campos de entrada
     var tipoEvento by remember { mutableStateOf("") }
     var dataEvento by remember { mutableStateOf("") }
     var observacoes by remember { mutableStateOf("") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
 
+    // ✅ ESTADO ADICIONADO
+    var valorPeso by remember { mutableStateOf("") }
+
     val context = LocalContext.current
     val petIdInt = petId?.toIntOrNull()
 
-    // Lista de tipos de evento (conforme Ponto 5 do plano)
-    val eventTypes = listOf("Vacina", "Banho", "Consulta", "Medicação", "Passeio", "Alimentação")
+    // ✅ "Peso" ADICIONADO À LISTA
+    val eventTypes = listOf("Vacina", "Banho", "Consulta", "Medicação", "Passeio", "Alimentação", "Peso")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Adicionar Evento") },
                 navigationIcon = {
-                    IconButton(onClick = onEventSaved) { // 'onEventSaved' age como "Voltar"
+                    IconButton(onClick = onEventSaved) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
@@ -73,7 +74,7 @@ fun AddEventScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor() // Necessário para o Dropdown
+                        .menuAnchor()
                 )
 
                 ExposedDropdownMenu(
@@ -96,10 +97,26 @@ fun AddEventScreen(
             OutlinedTextField(
                 value = dataEvento,
                 onValueChange = { dataEvento = it },
-                label = { Text("Data * (ex: DD/MM/AAAA)") }, // TODO: Usar um DatePicker no futuro
+                label = { Text("Data * (ex: DD/MM/AAAA)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            // ✅ --- CAMPO CONDICIONAL DE PESO (RF06) ---
+            AnimatedVisibility(visible = tipoEvento == "Peso") {
+                OutlinedTextField(
+                    value = valorPeso,
+                    onValueChange = { valorPeso = it.replace(",", ".") },
+                    label = { Text("Peso (kg) *") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp), // Espaçamento extra
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    suffix = { Text("kg") }
+                )
+            }
+            // --- FIM DA ADIÇÃO ---
 
             // --- Campo de Observações ---
             OutlinedTextField(
@@ -125,20 +142,28 @@ fun AddEventScreen(
                         return@Button
                     }
 
-                    // Cria a entidade Evento
+                    // ✅ LÓGICA DE VALIDAÇÃO DO PESO
+                    val valorDouble = valorPeso.toDoubleOrNull()
+                    if (tipoEvento == "Peso" && valorDouble == null) {
+                        Toast.makeText(context, "Por favor, insira um peso válido.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    // --- FIM DA ADIÇÃO ---
+
                     val novoEvento = Evento(
                         tipoEvento = tipoEvento,
                         dataEvento = dataEvento,
                         observacoes = observacoes.takeIf { it.isNotBlank() },
                         petId = petIdInt,
-                        isSynced = false // Para o RF05
+                        isSynced = false,
+                        // ✅ ADICIONADO O VALOR
+                        valor = if (tipoEvento == "Peso") valorDouble else null
                     )
 
-                    // Chama o ViewModel para salvar o evento
                     eventoViewModel.adicionarEvento(novoEvento)
 
                     Toast.makeText(context, "Evento '$tipoEvento' salvo!", Toast.LENGTH_SHORT).show()
-                    onEventSaved() // Navega de volta para PetDetailScreen
+                    onEventSaved()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

@@ -1,27 +1,30 @@
 package com.example.petcaresistemadecontroleerotinaparapets.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(evento: Evento)
+    suspend fun insertEvento(evento: Evento)
 
-    @Update
-    suspend fun update(evento: Evento)
+    @Query("SELECT * FROM eventos WHERE petId = :petId ORDER BY dataEvento DESC")
+    fun getEventosDoPet(petId: Int): Flow<List<Evento>>
 
-    @Delete
-    suspend fun delete(evento: Evento)
-
-    @Query("SELECT * FROM eventos WHERE petId = :petId")
-    suspend fun getEventosByPet(petId: Int): List<Evento>
-
-    @Query("SELECT * FROM eventos WHERE isSynced = 0")
-    suspend fun getUnsyncedEventos(): List<Evento>
+    // ✅ FUNÇÃO ADICIONADA (para RF03)
+    /**
+     * Busca todos os eventos de todos os pets de um usuário específico.
+     * Usa um JOIN com a tabela 'pets' para filtrar pelo 'userId'.
+     */
+    @Query("""
+        SELECT E.* FROM eventos E 
+        INNER JOIN pets P ON E.petId = P.petId 
+        WHERE P.userId = :userId 
+        ORDER BY E.dataEvento ASC
+    """)
+    fun getAllEventosDoUsuario(userId: String): Flow<List<Evento>>
 }

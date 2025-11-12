@@ -1,20 +1,24 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") // 👈 necessário para Compose no Kotlin 2.0
+    id("org.jetbrains.kotlin.plugin.compose")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 android {
     namespace = "com.example.petcaresistemadecontroleerotinaparapets"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.petcaresistemadecontroleerotinaparapets"
         minSdk = 25
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -70,7 +74,8 @@ dependencies {
     // Integração do Hilt com a Navegação do Compose
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // --- ROOM (Banco Local) ---
+// --- ROOM (Banco Local) ---
+    // ✅ REVERTIDO para 2.6.1
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
@@ -101,4 +106,24 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
+
+    // Dependências do Vico Chart (RF06)
+    implementation("com.patrykandpatrick.vico:core:2.1.2")
+    implementation("com.patrykandpatrick.vico:compose:2.1.2")
+    implementation("com.patrykandpatrick.vico:compose-m3:2.1.2")
+
+    kapt("androidx.room:room-compiler:2.6.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.8.0")
+
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // --- HILT (Injeção de Dependência) ---
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+
+    // ✅ ESTA LINHA CORRIGE O ERRO DE METADATA
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.8.0")
 }
