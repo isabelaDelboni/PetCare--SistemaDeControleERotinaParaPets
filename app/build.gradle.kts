@@ -1,19 +1,23 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt") // para anotações (Room, Hilt)
-    id("com.google.dagger.hilt.android") // Hilt para injeção de dependência
-    id("com.google.gms.google-services") // Firebase
+    id("org.jetbrains.kotlin.plugin.compose")
+    // ❌ REMOVIDO: id("kotlin-kapt")
+    id("com.google.devtools.ksp") // ✅ ADICIONADO
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
+
+// ❌ Bloco 'kapt { ... }' removido
 
 android {
     namespace = "com.example.petcaresistemadecontroleerotinaparapets"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.petcaresistemadecontroleerotinaparapets"
         minSdk = 25
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -42,55 +46,68 @@ android {
     buildFeatures {
         compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14" // Compatível com Kotlin 2.0
+    }
 }
 
 dependencies {
-    // --- AndroidX e UI ---
+    // --- AndroidX e UI Core ---
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    implementation("androidx.activity:activity-compose:1.9.0")
 
-    // --- ROOM (banco local) ---
+    // --- Compose (UI Toolkit) ---
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // --- NAVIGATION (Compose) ---
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // --- ROOM (Banco Local) ---
     implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    // ✅ MIGRADO DE 'kapt' PARA 'ksp'
+    ksp("androidx.room:room-compiler:2.6.1")
 
-    // --- NAVIGATION (gerenciamento de telas) ---
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.4")
-
-    // --- FIREBASE (autenticação e banco online) ---
+    // --- FIREBASE (Autenticação e Banco Online) ---
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-messaging")
 
-    // --- HILT (injeção de dependência) ---
+    // --- HILT (Injeção de Dependência) ---
     implementation("com.google.dagger:hilt-android:2.52")
-    kapt("com.google.dagger:hilt-compiler:2.52")
+    // ✅ MIGRADO DE 'kapt' PARA 'ksp'
+    ksp("com.google.dagger:hilt-compiler:2.52")
 
-    // --- ViewModel + LiveData ---
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
+    // --- ViewModel ---
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
 
-    // --- Compose (se estiver usando telas modernas) ---
-    implementation("androidx.compose.ui:ui:1.7.4")
-    implementation("androidx.compose.material3:material3:1.3.0")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.4")
-
-    // --- WORK MANAGER ---
+    // --- WORK MANAGER (Sincronia) ---
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
-
-    // Testes unitários
+    // --- Testes ---
     testImplementation("junit:junit:4.13.2")
-
-    // Testes instrumentados (Android)
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // --- Ícones ---
+    implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
+
+    // --- Dependências do Vico Chart (RF06) ---
+    implementation("com.patrykandpatrick.vico:core:2.1.2")
+    implementation("com.patrykandpatrick.vico:compose:2.1.2")
+    implementation("com.patrykandpatrick.vico:compose-m3:2.1.2")
 }

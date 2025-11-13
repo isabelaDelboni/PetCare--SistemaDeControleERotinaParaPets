@@ -2,39 +2,45 @@ package com.example.petcaresistemadecontroleerotinaparapets.data.repository
 
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.PetDao
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.petcaresistemadecontroleerotinaparapets.data.remote.FirebaseAuthService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PetRepository(
+@Singleton
+class PetRepository @Inject constructor(
     private val petDao: PetDao,
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val authService: FirebaseAuthService
 ) {
 
     suspend fun addPet(pet: Pet) {
-        // salva local
-        petDao.insert(pet.copy(isSynced = false))
+        petDao.insertPet(pet)
+    }
 
-        // tenta salvar remoto (não bloqueante)
-        try {
-            val docRef = firestore.collection("users")
-                .document(pet.usuarioId)
-                .collection("pets")
-                .document() // gera id no Firestore
-            // se quiser manter idPet = docRef.id, ajuste lógica
-            docRef.set(pet).addOnSuccessListener {
-                // ideal: atualizar o pet local marcando isSynced = true (precisa obter id local)
-            }.addOnFailureListener { /* log */ }
-        } catch (e: Exception) {
-            // sem internet: ok — ficará no Room para sincronizar depois
+    // ✅ FUNÇÃO ADICIONADA
+    suspend fun updatePet(pet: Pet) {
+        petDao.updatePet(pet)
+    }
+    // --- FIM DA ADIÇÃO ---
+
+    suspend fun deletePet(pet: Pet) {
+        petDao.deletePet(pet)
+    }
+
+    fun getPetsDoUsuario(): Flow<List<Pet>> {
+        // Padrão reativo: Observa o ID do usuário e atualiza a lista de pets
+        return authService.getUserIdFlow().flatMapLatest { userId ->
+            if (userId == null) {
+                flowOf(emptyList()) // Retorna lista vazia se não houver usuário
+            } else {
+                petDao.getPetsDoUsuario(userId)
+            }
         }
     }
 
-    suspend fun getPetsByUser(userId: String): List<Pet> =
-        petDao.getPetsByUser(userId)
-
-    suspend fun getUnsyncedPets(): List<Pet> = petDao.getUnsyncedPets()
-
-    suspend fun markPetAsSynced(localId: Int) {
-        petDao.getPetsByUser("") // exemplo: buscar e atualizar. Melhor implementar uma query para atualizar por id
-        // Recomendo criar método no DAO para atualizar isSynced por id
+    suspend fun getPetById(petId: Int): Pet? {
+        return petDao.getPetById(petId)
     }
 }

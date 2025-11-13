@@ -5,23 +5,25 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
+import androidx.room.Update // ✅ IMPORT ADICIONADO
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Pet
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(pet: Pet)
+    suspend fun insertPet(pet: Pet)
 
+    // ✅ FUNÇÃO ADICIONADA
     @Update
-    suspend fun update(pet: Pet)
+    suspend fun updatePet(pet: Pet)
 
     @Delete
-    suspend fun delete(pet: Pet)
+    suspend fun deletePet(pet: Pet)
 
-    @Query("SELECT * FROM pets WHERE usuarioId = :userId")
-    suspend fun getPetsByUser(userId: String): List<Pet>
+    @Query("SELECT * FROM pets WHERE userId = :userId")
+    fun getPetsDoUsuario(userId: String): Flow<List<Pet>>
 
-    @Query("SELECT * FROM pets WHERE isSynced = 0")
-    suspend fun getUnsyncedPets(): List<Pet>
+    @Query("SELECT * FROM pets WHERE petId = :petId")
+    suspend fun getPetById(petId: Int): Pet?
 }
