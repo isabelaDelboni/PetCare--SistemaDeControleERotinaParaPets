@@ -5,7 +5,6 @@ import androidx.room.Room
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.AppDatabase
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.EventoDao
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.PetDao
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.UsuarioDao
 import com.example.petcaresistemadecontroleerotinaparapets.data.remote.FirebaseAuthService
 import dagger.Module
 import dagger.Provides
@@ -18,45 +17,35 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object HiltModule {
 
-    // --- Autenticação (Já existia) ---
     @Provides
     @Singleton
     fun provideFirebaseAuthService(): FirebaseAuthService {
         return FirebaseAuthService()
     }
 
-    // --- Banco de Dados (Já existia) ---
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
-            context,
+            context.applicationContext,
             AppDatabase::class.java,
-            "petcare_db"
+            "petcare_database"
         )
-            .fallbackToDestructiveMigration() // (Permite recriar o banco ao mudar a versão)
+            // ✅ ADICIONE ESTA LINHA:
+            // Isso diz ao Room: "Se você precisar migrar e não houver um
+            // script de migração, apenas apague tudo e comece de novo."
+            // Perfeito para desenvolvimento.
+            .fallbackToDestructiveMigration()
             .build()
     }
 
-    // --- DAOs (Atualizado) ---
     @Provides
-    @Singleton
-    fun provideUsuarioDao(db: AppDatabase): UsuarioDao {
-        return db.usuarioDao()
+    fun providePetDao(appDatabase: AppDatabase): PetDao {
+        return appDatabase.petDao()
     }
 
     @Provides
-    @Singleton
-    fun provideEventoDao(db: AppDatabase): EventoDao {
-        return db.eventoDao()
+    fun provideEventoDao(appDatabase: AppDatabase): EventoDao {
+        return appDatabase.eventoDao()
     }
-
-    // ✅ ADICIONADO: Provider para o novo PetDao
-    @Provides
-    @Singleton
-    fun providePetDao(db: AppDatabase): PetDao {
-        return db.petDao()
-    }
-
-    // TODO: Adicionar providers para os Repositórios (embora o @Inject constructor já ajude)
 }

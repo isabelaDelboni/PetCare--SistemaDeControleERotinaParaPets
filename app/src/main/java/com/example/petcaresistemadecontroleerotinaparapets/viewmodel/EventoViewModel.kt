@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,20 +35,40 @@ class EventoViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<EventoUiState>(EventoUiState.Idle)
     val uiState: StateFlow<EventoUiState> = _uiState.asStateFlow()
 
-    // ✅ ADIÇÃO:
-    // Inicia a coleta de TODOS os eventos (para a tela de Lembretes)
-    // assim que o ViewModel é criado.
     init {
         carregarTodosOsEventos()
     }
-    // --- FIM DA ADIÇÃO ---
 
     fun adicionarEvento(evento: Evento) {
         viewModelScope.launch {
             eventoRepository.adicionarEvento(evento)
-            scheduler.scheduleNotification(evento)
+            // CORREÇÃO: O nome do método no Scheduler é scheduleEventNotification
+            scheduler.scheduleEventNotification(evento)
         }
     }
+
+    fun updateEvento(evento: Evento) {
+        viewModelScope.launch {
+            eventoRepository.updateEvento(evento)
+            // Agora vai funcionar porque adicionamos o método no passo 2
+            scheduler.cancelNotification(evento)
+            // CORREÇÃO: Nome do método
+            scheduler.scheduleEventNotification(evento)
+        }
+    }
+
+    fun excluirEvento(evento: Evento) {
+        viewModelScope.launch {
+            eventoRepository.excluirEvento(evento)
+            scheduler.cancelNotification(evento)
+        }
+    }
+
+    // ✅ FUNÇÃO ADICIONADA
+    suspend fun getEventoParaEdicao(eventoId: Int): Evento? {
+        return eventoRepository.getEventoById(eventoId)
+    }
+    // --- FIM DA ADIÇÃO ---
 
     fun carregarEventosDoPet(petId: Int) {
         viewModelScope.launch {
@@ -63,7 +84,6 @@ class EventoViewModel @Inject constructor(
         }
     }
 
-    // (Esta função agora é chamada pelo init)
     fun carregarTodosOsEventos() {
         viewModelScope.launch {
             _uiState.value = EventoUiState.Loading

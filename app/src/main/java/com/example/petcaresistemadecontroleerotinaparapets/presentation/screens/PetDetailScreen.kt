@@ -1,6 +1,6 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.screens
 
-import android.widget.Toast // <-- IMPORT ADICIONADO
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,12 +8,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Delete // <-- IMPORT ADICIONADO
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit // ✅ IMPORT ADICIONADO
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext // <-- IMPORT ADICIONADO
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,12 +32,13 @@ fun PetDetailScreen(
     navController: NavController,
     petViewModel: PetViewModel,
     eventoViewModel: EventoViewModel,
-    onAddEventClick: () -> Unit
+    onAddEventClick: () -> Unit,
+    onEditEventClick: (String) -> Unit // ✅ PARÂMETRO ADICIONADO
 ) {
     val petIdInt = petId?.toIntOrNull()
     val pet by petViewModel.selectedPet.collectAsState()
     val eventos by eventoViewModel.eventos.collectAsState()
-    val context = LocalContext.current // <-- ADICIONADO
+    val context = LocalContext.current
 
     // --- LÓGICA DE EXCLUSÃO (RF01) ---
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -57,6 +59,25 @@ fun PetDetailScreen(
     }
     // --- FIM DA LÓGICA DE EXCLUSÃO ---
 
+    // --- LÓGICA DE EXCLUSÃO DE EVENTO ---
+    var showDeleteEventoDialog by remember { mutableStateOf<Evento?>(null) }
+
+    if (showDeleteEventoDialog != null) {
+        DeleteEventoConfirmationDialog(
+            evento = showDeleteEventoDialog!!,
+            onConfirm = { evento ->
+                eventoViewModel.excluirEvento(evento)
+                showDeleteEventoDialog = null
+                Toast.makeText(context, "Evento '${evento.tipoEvento}' excluído.", Toast.LENGTH_SHORT).show()
+            },
+            onDismiss = {
+                showDeleteEventoDialog = null
+            }
+        )
+    }
+    // --- FIM DA ADIÇÃO ---
+
+
     LaunchedEffect(petIdInt) {
         if (petIdInt != null) {
             petViewModel.carregarPetPorId(petIdInt)
@@ -74,7 +95,6 @@ fun PetDetailScreen(
                     }
                 },
                 actions = {
-                    // --- BOTÃO DE RELATÓRIOS (EXISTENTE) ---
                     IconButton(onClick = {
                         if (petId != null) {
                             navController.navigate(ScreenRoutes.reports(petId))
@@ -82,18 +102,15 @@ fun PetDetailScreen(
                     }) {
                         Icon(Icons.Default.BarChart, contentDescription = "Relatórios do Pet")
                     }
-
-                    // --- BOTÃO DE EXCLUIR (NOVO) ---
                     IconButton(onClick = {
-                        showDeleteDialog = true // Abre o diálogo de confirmação
+                        showDeleteDialog = true
                     }) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Excluir Pet",
-                            tint = MaterialTheme.colorScheme.error // Dá destaque
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
-                    // --- FIM DA ADIÇÃO ---
                 }
             )
         },
@@ -103,7 +120,6 @@ fun PetDetailScreen(
             }
         }
     ) { padding ->
-        // ... (O resto da tela (LazyColumn) permanece o mesmo) ...
         if (pet == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -136,7 +152,16 @@ fun PetDetailScreen(
                     }
                 } else {
                     items(eventos, key = { it.idEvento }) { evento ->
-                        EventoCard(evento)
+                        EventoCard(
+                            evento = evento,
+                            // ✅ CHAMADA ADICIONADA
+                            onEditClick = {
+                                onEditEventClick(evento.idEvento.toString())
+                            },
+                            onDeleteClick = {
+                                showDeleteEventoDialog = evento
+                            }
+                        )
                     }
                 }
             }
@@ -144,7 +169,7 @@ fun PetDetailScreen(
     }
 }
 
-// --- DIÁLOGO DE CONFIRMAÇÃO (NOVO) ---
+// ... (Diálogo DeleteConfirmationDialog permanece o mesmo) ...
 @Composable
 private fun DeleteConfirmationDialog(
     petName: String,
@@ -172,10 +197,38 @@ private fun DeleteConfirmationDialog(
         }
     )
 }
-// --- FIM DA ADIÇÃO ---
+
+// ... (Diálogo DeleteEventoConfirmationDialog permanece o mesmo) ...
+@Composable
+private fun DeleteEventoConfirmationDialog(
+    evento: Evento,
+    onConfirm: (Evento) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Excluir Evento") },
+        text = { Text("Tem certeza que deseja excluir o evento '${evento.tipoEvento}' de ${evento.dataEvento}?") },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(evento) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Excluir")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
 
 
-// ... (PetInfoCard, EventoCard, InfoLinha permanecem os mesmos) ...
+// ... (PetInfoCard permanece o mesmo) ...
 @Composable
 private fun PetInfoCard(pet: Pet) {
     Card(
@@ -199,8 +252,13 @@ private fun PetInfoCard(pet: Pet) {
     }
 }
 
+// ✅ --- EventoCard ATUALIZADO (com botão de editar) ---
 @Composable
-private fun EventoCard(evento: Evento) {
+private fun EventoCard(
+    evento: Evento,
+    onEditClick: () -> Unit, // ✅ PARÂMETRO ADICIONADO
+    onDeleteClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,11 +267,11 @@ private fun EventoCard(evento: Evento) {
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Coluna de Informações
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = evento.tipoEvento,
@@ -228,15 +286,37 @@ private fun EventoCard(evento: Evento) {
                     )
                 }
             }
+            // Data
             Text(
                 text = evento.dataEvento,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
+
+            // ✅ BOTÃO DE EDITAR ADICIONADO
+            IconButton(onClick = onEditClick) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Editar Evento",
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            // Botão de Excluir
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Excluir Evento",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }
+// --- FIM DA ATUALIZAÇÃO ---
 
+// ... (InfoLinha permanece o mesmo) ...
 @Composable
 private fun InfoLinha(label: String, valor: String) {
     Row {

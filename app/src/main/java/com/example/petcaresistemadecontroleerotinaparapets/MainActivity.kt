@@ -17,7 +17,7 @@ import com.example.petcaresistemadecontroleerotinaparapets.presentation.navigati
 import com.example.petcaresistemadecontroleerotinaparapets.ui.theme.PetCareSistemaDeControleERotinaParaPetsTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-// 1. Anotação obrigatória para o Hilt injetar ViewModels
+// 1. Anota  ção obrigatória para o Hilt injetar ViewModels
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 

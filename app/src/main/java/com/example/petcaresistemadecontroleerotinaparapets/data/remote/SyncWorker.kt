@@ -1,55 +1,94 @@
 package com.example.petcaresistemadecontroleerotinaparapets.data.remote
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.AppDatabase
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.EventoDao
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.dao.PetDao
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
 
-// TODO: Esta classe precisa ser refatorada para usar HiltWorker para injeção de dependência
 class SyncWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
-    // private val petDao: PetDao
-    // private val eventoDao: EventoDao
-    private val firestore: FirebaseFirestore
+    // Instancia o Banco de dados Local
+    private val db = AppDatabase.getInstance(appContext)
+    private val petDao = db.petDao()
+    private val eventoDao = db.eventoDao()
 
-    init {
-        // Esta é uma má prática (Service Locator), mas é o que o código
-        // anterior sugere. O ideal é injetar os DAOs.
-        // val db = AppDatabase.getInstance(appContext) // .getInstance() não existe
-        // petDao = db.petDao()
-        // eventoDao = db.eventoDao()
-        firestore = FirebaseFirestore.getInstance()
-    }
+    // Instancia o Firestore
+    private val firestore = FirebaseFirestore.getInstance()
 
     override suspend fun doWork(): Result {
-        try {
-            // A lógica de sincronização (RF05) ainda precisa ser implementada.
-            // O código abaixo é um esboço baseado no seu arquivo anterior.
+        return try {
+            Log.d("SyncWorker", "Iniciando sincronização em segundo plano...")
 
-            // Exemplo de como seria (atualmente comentado para compilar):
-            /*
+            // ------------------------------------------------------------
+            // 1. SINCRONIZAR PETS (Room -> Firebase)
+            // ------------------------------------------------------------
             val unsyncedPets = petDao.getUnsyncedPets()
-            unsyncedPets.forEach { pet ->
-                val docRef = firestore.collection("users")
-                    .document(pet.userId) // Corrigido de 'usuarioId'
-                    .collection("pets")
-                    .document(pet.petId.toString()) // Corrigido de 'idPet'
 
-                docRef.set(pet).await() // Usar await em suspend fun
-                // Marcar pet como synced no Room
-                petDao.updatePet(pet.copy(isSynced = true))
+            for (pet in unsyncedPets) {
+                // Se o pet não tiver userId (erro de dados), pula
+                if (pet.userId.isBlank()) continue
+
+                try {
+                    // Salva no Firestore usando o ID local como ID do documento
+                    firestore.collection("users")
+                        .document(pet.userId)
+                        .collection("pets")
+                        .document(pet.idPet.toString())
+                        .set(pet, SetOptions.merge())
+                        .await() // Espera terminar
+
+                    // Se deu certo, atualiza o banco local
+                    petDao.updatePet(pet.copy(isSynced = true))
+                    Log.d("SyncWorker", "Pet ${pet.idPet} sincronizado!")
+
+                } catch (e: Exception) {
+                    Log.e("SyncWorker", "Erro ao sincronizar pet ${pet.idPet}", e)
+                }
             }
-            */
 
-            return Result.success()
+            // ------------------------------------------------------------
+            // 2. SINCRONIZAR EVENTOS (Room -> Firebase)
+            // ------------------------------------------------------------
+            val unsyncedEventos = eventoDao.getUnsyncedEventos()
+
+            for (evento in unsyncedEventos) {
+                try {
+                    // PROBLEMA: O Evento só tem o petId, mas o Firestore precisa do userId.
+                    // SOLUÇÃO: Buscamos o Pet no banco para pegar o userId dele.
+                    val petDono = petDao.getPetById(evento.petId)
+
+                    if (petDono != null && petDono.userId.isNotBlank()) {
+                        firestore.collection("users")
+                            .document(petDono.userId)
+                            .collection("pets")
+                            .document(evento.petId.toString())
+                            .collection("events")
+                            .document(evento.idEvento.toString())
+                            .set(evento, SetOptions.merge())
+                            .await()
+
+                        // Atualiza localmente
+                        eventoDao.updateEvento(evento.copy(isSynced = true))
+                        Log.d("SyncWorker", "Evento ${evento.idEvento} sincronizado!")
+                    } else {
+                        Log.e("SyncWorker", "Não foi possível achar o dono do evento ${evento.idEvento}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("SyncWorker", "Erro ao sincronizar evento ${evento.idEvento}", e)
+                }
+            }
+
+            Result.success()
         } catch (e: Exception) {
-            return Result.retry()
+            Log.e("SyncWorker", "Falha geral no Worker", e)
+            Result.retry() // Tenta de novo mais tarde se der erro geral
         }
     }
 }

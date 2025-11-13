@@ -83,6 +83,10 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.compose.material:material-icons-extended:1.7.4")
 
     // --- HILT (Injeção de Dependência) ---
     implementation("com.google.dagger:hilt-android:2.52")

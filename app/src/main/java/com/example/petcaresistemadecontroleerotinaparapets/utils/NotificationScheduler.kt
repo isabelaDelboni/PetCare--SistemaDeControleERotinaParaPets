@@ -1,63 +1,96 @@
 package com.example.petcaresistemadecontroleerotinaparapets.utils
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento
-// ✅ IMPORT ADICIONADO
-import com.example.petcaresistemadecontroleerotinaparapets.utils.DateConverter
+import com.example.petcaresistemadecontroleerotinaparapets.receiver.NotificationReceiver
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class NotificationScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun scheduleNotification(evento: Evento) {
-        val triggerAtMillis = DateConverter.parseDateToTimestamp(evento.dataEvento) ?: return
+    @SuppressLint("ScheduleExactAlarm") // Permissão necessária no Android 12+
+    fun scheduleEventNotification(evento: Evento) {
+        try {
+            // 1. Converter a String de data (DD/MM/AAAA) para Millisegundos
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val date = sdf.parse(evento.dataEvento)
 
-        if (triggerAtMillis < System.currentTimeMillis()) {
-            return
-        }
+            if (date == null) return
 
-        val intent = Intent(context, ReminderBroadcastReceiver::class.java).apply {
-            // ✅ CORREÇÃO: 'idEvento'
-            putExtra(ReminderBroadcastReceiver.EXTRA_NOTIFICATION_ID, evento.idEvento)
-            putExtra(ReminderBroadcastReceiver.EXTRA_TITLE, "Lembrete: ${evento.tipoEvento}")
-            putExtra(ReminderBroadcastReceiver.EXTRA_MESSAGE, "Evento agendado: ${evento.observacoes ?: evento.tipoEvento}")
-        }
+            // Configura o horário para as 08:00 da manhã do dia do evento
+            val calendar = Calendar.getInstance()
+            calendar.time = date
+            calendar.set(Calendar.HOUR_OF_DAY, 8)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
 
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            // ✅ CORREÇÃO: 'idEvento'
-            evento.idEvento, // Usa o ID do evento como ID do PendingIntent
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+            // Se a data já passou, não agenda
+            if (calendar.timeInMillis <= System.currentTimeMillis()) return
 
-        if (alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAtMillis,
-                pendingIntent
+            // 2. Preparar o Intent
+            val intent = Intent(context, NotificationReceiver::class.java).apply {
+                putExtra("TITLE", "Lembrete: ${evento.tipoEvento}")
+                putExtra("MESSAGE", "Não esqueça: ${evento.observacoes ?: evento.tipoEvento} hoje!")
+                putExtra("ID", evento.idEvento)
+            }
+
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                evento.idEvento, // ID único para não sobrescrever outros alarmes
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
-        } else {
-            alarmManager.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAtMillis,
-                pendingIntent
-            )
+
+            // 3. Agendar
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            }
+            Log.d("Scheduler", "Alarme agendado para: ${calendar.time}")
+
+        } catch (e: Exception) {
+            Log.e("Scheduler", "Erro ao agendar: ${e.message}")
         }
     }
+    // ... (código anterior do scheduleEventNotification) ...
 
+    // ADICIONE ESTA FUNÇÃO NA CLASSE NotificationScheduler:
     fun cancelNotification(evento: Evento) {
-        val intent = Intent(context, ReminderBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            // ✅ CORREÇÃO: 'idEvento'
-            evento.idEvento,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(pendingIntent)
+        try {
+            val intent = Intent(context, NotificationReceiver::class.java)
+
+            // Recria o PendingIntent exato que usamos para agendar (mesmo ID)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                evento.idEvento, // O ID tem que ser o mesmo do agendamento
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            // Cancela o alarme
+            alarmManager.cancel(pendingIntent)
+            Log.d("Scheduler", "Alarme cancelado para evento ID: ${evento.idEvento}")
+
+        } catch (e: Exception) {
+            Log.e("Scheduler", "Erro ao cancelar alarme: ${e.message}")
+        }
     }
 }

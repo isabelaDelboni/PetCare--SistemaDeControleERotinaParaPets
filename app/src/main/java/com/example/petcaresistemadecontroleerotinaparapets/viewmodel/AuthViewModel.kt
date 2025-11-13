@@ -1,31 +1,60 @@
 package com.example.petcaresistemadecontroleerotinaparapets.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petcaresistemadecontroleerotinaparapets.data.remote.FirebaseAuthService
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    // 1. Injeta o Serviço de Autenticação
-    private val authService: FirebaseAuthService
+    private val authService: FirebaseAuthService,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val email = mutableStateOf("")
     val password = mutableStateOf("")
-
-    // 2. Controla o estado da UI (Carregando, Erro, Sucesso)
     val loginState = mutableStateOf<LoginState>(LoginState.Idle)
+
+    val googleSignInClient: GoogleSignInClient
+
+    init {
+        // --- ATENÇÃO: COLE O SEU WEB CLIENT ID ABAIXO ---
+        // Pegue no Firebase Console -> Authentication -> Google -> Web SDK Configuration
+        val webClientId = "301129245613-lijf67i6e1hjjqmmikmd7j53urher41c.apps.googleusercontent.com"
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(context, gso)
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        loginState.value = LoginState.Loading
+        viewModelScope.launch {
+            val result = authService.signInWithGoogleCredential(idToken)
+            result.onSuccess {
+                loginState.value = LoginState.Success
+            }.onFailure { exception ->
+                loginState.value = LoginState.Error(exception.message ?: "Erro no login com Google")
+            }
+        }
+    }
 
     fun login() {
         if (email.value.isBlank() || password.value.isBlank()) {
             loginState.value = LoginState.Error("E-mail e senha não podem estar em branco.")
             return
         }
-
         loginState.value = LoginState.Loading
         viewModelScope.launch {
             val result = authService.signIn(email.value, password.value)
@@ -37,42 +66,31 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // --- FUNÇÃO SIGNUP CORRIGIDA ---
     fun signUp() {
-        // Validação simples
         if (email.value.isBlank() || password.value.isBlank()) {
             loginState.value = LoginState.Error("Email e Senha não podem estar vazios.")
             return
         }
-
         loginState.value = LoginState.Loading
-
-        // ✅ CORREÇÃO: Usando viewModelScope para chamar a suspend fun 'signUp'
         viewModelScope.launch {
-            // ✅ CORREÇÃO: Chamando a função 'signUp' do serviço, que retorna um Result
-            val result = authService.signUp(email.value, password.value) //
-
+            val result = authService.signUp(email.value, password.value)
             result.onSuccess {
-                // Sucesso! O LaunchedEffect na tela de SignUp irá capturar isso.
                 loginState.value = LoginState.Success
             }.onFailure { exception ->
-                // Erro
-                // ✅ CORREÇÃO: 'exception.message' agora é válido
                 loginState.value = LoginState.Error(exception.message ?: "Erro ao criar conta.")
             }
         }
     }
-    // --- FIM DA CORREÇÃO ---
 
     fun getCurrentUser() = authService.getCurrentUser()
 
     fun signOut() {
         authService.signOut()
+        googleSignInClient.signOut()
         loginState.value = LoginState.Idle
     }
 }
 
-// 3. Classe para representar os estados
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
