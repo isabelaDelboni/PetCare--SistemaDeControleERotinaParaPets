@@ -343,3 +343,64 @@ O David cuida de toda a parte de backend remoto usando Firebase, garantindo aute
 > * Alterações estruturais não devem ser feitas sem alinhamento.
 > * Qualquer mudança precisa ser comunicada antes.
 > * O projeto foi organizado previamente para evitar conflitos; manter esse padrão é essencial para a integração funcionar sem retrabalho.
+Com certeza! Posso formatar seu texto para um arquivo `README.md` usando **Markdown** (linguagem de marcação), o que facilita a leitura e a cópia.
+
+---
+
+# 🗺️ Arquitetura e Modelagem de Dados
+
+Este módulo documenta toda a **arquitetura lógica** do sistema, incluindo o **fluxo de navegação entre telas** e a **modelagem de dados** utilizada para representar pets, usuários, eventos e lembretes.
+
+A estrutura foi desenhada para ser clara, escalável e completamente alinhada ao padrão adotado no projeto.
+
+## 📱 1. Diagrama de Fluxo de Telas (Navigation Flow)
+
+O fluxo abaixo representa a navegação real do aplicativo, mostrando como o usuário transita pelas telas principais.
+
+### Telas e suas Funções
+
+| Tela | Função |
+| :--- | :--- |
+| `LoginActivity` | Tela inicial de **autenticação**. |
+| `HomeActivity` | **Hub central**; acesso a todos os módulos. |
+| `ListaPetsActivity` | **Listagem de pets** do usuário. |
+| `DetalhesPetActivity` | Informações completas do pet + eventos. |
+| `EventoActivity` | Cadastro/edição de **eventos** do pet. |
+| `LembreteActivity` | **Lembretes** vinculados aos eventos. |
+| `PerfilUsuarioActivity` | Visualização do **perfil do usuário**. |
+| `EditarPerfilActivity` | Edição dos **dados pessoais**. |
+| `CadastroPetActivity` | Cadastro de **novos pets**. |
+| `DetalhesRotaActivity` | Detalhes de **rotas** cadastradas. |
+| `FavoritosActivity` | Pets ou itens **favoritados**. |
+| `RotasActivity` | **Rotas** registradas pelo usuário. |
+
+### 📥 Importar o Fluxo de Telas (Draw.io / Diagrams.net)
+
+<img width="1261" height="381" alt="Diagrama de Navegação entre Activitie 2 drawio" src="https://github.com/user-attachments/assets/05e54344-6888-41a4-80ae-e5aed3f02001" />
+
+
+## 🗂️ 2. Diagrama Entidade-Relacionamento (ER)
+
+Este diagrama representa a estrutura lógica do banco de dados, exibindo **entidades**, **atributos** e **relacionamentos** entre elas. É a base do modelo usado no **Firebase/Room**.
+
+### Entidades e Relacionamentos
+
+| Entidade | Chave Primária | Foreign Key | Relação |
+| :--- | :--- | :--- | :--- |
+| **Usuario** | `idUsuario` | --- | --- |
+| **Pet** | `idPet` | `userId` → `Usuario(idUsuario)` | **Usuario 1:N Pet** |
+| **Evento** | `idEvento` | `petId` → `Pet(idPet)` | **Pet 1:N Evento** |
+| **Lembrete** | `idLembrete` | `eventoId` → `Evento(idEvento)` | **Evento 1:N Lembrete** |
+| **Relatorio** | `idRelatorio` | `usuarioId` → `Usuario(idUsuario)` | **Usuario 1:1 Relatorio** |
+
+### 🔗 Cardinalidades
+
+* Um **usuário** pode ter **vários pets** (1:N).
+* Um **pet** pode possuir **vários eventos** (1:N).
+* Um **evento** pode gerar **vários lembretes** (1:N).
+* Um **usuário** possui apenas **um relatório consolidado** (1:1).
+
+### 📥 Importar ER (Draw.io / Diagrams.net)
+
+<img width="981" height="421" alt="Diagrama entidade 2 drawio" src="https://github.com/user-attachments/assets/2b5a845e-13f8-4bd4-adb4-685dac754018" />
+
