@@ -237,3 +237,109 @@ Após isso, o arquivo surge em: `app/build/outputs/`
 
 ```
 ```
+
+---
+## 👩‍💻 Isabela Escolaro Delboni — Arquitetura, Banco Local e Sincronização
+
+Isa ficou responsável pela espinha dorsal técnica do app: estrutura, organização dos módulos e comunicação entre camadas. Suas tarefas envolvem toda a base do MVVM e a integração entre Room e Firebase.
+
+### Responsabilidades Detalhadas
+
+* Definir toda a estrutura de pacotes seguindo o padrão MVVM (Model–View–ViewModel).
+* Configurar dependências principais do projeto:
+    * Room para banco local,
+    * Firebase,
+    * Navigation Component,
+    * Hilt para injeção de dependência.
+* Criar todas as entidades essenciais:
+    * `Pet`,
+    * `Evento`,
+    * `Usuario`.
+* Implementar DAOs (`PetDao`, `EventoDao`).
+* Criar repositórios utilizando Repository Pattern:
+    * `PetRepository`,
+    * `EventoRepository`.
+* Implementar sincronização automática Room ↔ Firebase, utilizando:
+    * WorkManager,
+    * Workers de upload/download,
+    * Estratégias de resolução de conflito (local vs remoto).
+* Criar e configurar os ViewModels principais:
+    * `PetViewModel`,
+    * `EventoViewModel`,
+    * `AuthViewModel`.
+* Realizar testes completos de CRUD tanto local quanto remoto.
+* Testar sincronização offline/online.
+* Documentar:
+    * Diagrama de classes,
+    * Diagrama do banco,
+    * Descrição técnica de arquitetura.
+* Criar o README final com prints e orientações.
+* Participar da apresentação final.
+
+---
+## 🎨 Mateus Henrique Escolaro — Telas, UI/UX e Navegação
+
+O Mateus é responsável por todas as telas do aplicativo, seguindo o fluxo pensado no figma/protótipo do sistema e garantindo experiência e navegação fluida via Jetpack Compose.
+
+### Responsabilidades Detalhadas
+
+* Criar telas em Jetpack Compose, incluindo:
+    * Login,
+    * Meus Pets,
+    * Cadastro de Pet.
+* Criar telas adicionais:
+    * Tela de Detalhes do Pet,
+    * Tela de Cadastro de Evento,
+    * Tela de Lembretes,
+    * Tela de Configurações.
+* Configurar a navegação usando Compose Navigation:
+    * Rotas,
+    * NavHost,
+    * Navegação entre fluxos (auth → app).
+* Criar componentes reutilizáveis:
+    * Cards,
+    * Inputs,
+    * Botões,
+    * Layouts de listas.
+* Implementar feedback visual:
+    * Toasts,
+    * Loaders,
+    * Mensagens de erro ou sucesso.
+* Auxiliar nos testes de usabilidade.
+* Garantir integração fluida com os ViewModels criados pela Isa.
+
+---
+## 🔥 David Rocha Neto — Firebase, Autenticação e Notificações
+
+O David cuida de toda a parte de backend remoto usando Firebase, garantindo autenticação, armazenamento de dados e envio de notificações.
+
+### Responsabilidades Detalhadas
+
+* Configurar Firebase Authentication:
+    * Login,
+    * Registro,
+    * Persistência do usuário logado.
+* Configurar Firestore com a estrutura:
+    ```
+    /users/{uid}/pets/{petId}/events/{eventId}
+    ```
+* Configurar Firebase Storage para upload de fotos:
+    * Pets,
+    * Eventos.
+* Implementar Firebase Cloud Messaging (FCM):
+    * Notificações automáticas de eventos,
+    * Agendamentos,
+    * Tokens por usuário.
+* Integrar Firebase com o WorkManager para sincronização:
+    * Upload de dados offline,
+    * Download de dados atualizados.
+* Participar dos testes de CRUD local-remoto e sincronização.
+* Ajudar na apresentação técnica.
+
+---
+## 📁 Observações Importantes (Acordadas pelo Grupo)
+
+> * Toda implementação deve seguir a estrutura oficial das pastas: `data/local`, `data/remote`, `data/repository`, `ui`, `viewmodel` etc.
+> * Alterações estruturais não devem ser feitas sem alinhamento.
+> * Qualquer mudança precisa ser comunicada antes.
+> * O projeto foi organizado previamente para evitar conflitos; manter esse padrão é essencial para a integração funcionar sem retrabalho.
