@@ -48,8 +48,7 @@ fun LoginScreen(
 
     val context = LocalContext.current
 
-    // --- LAUNCHER DO GOOGLE ---
-    // Prepara o launcher que vai receber o resultado do pop-up do Google
+
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -60,13 +59,11 @@ fun LoginScreen(
                 // Sucesso! Pega o ID Token e manda para o ViewModel
                 authViewModel.signInWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                // Erro
                 Toast.makeText(context, "Erro no login com Google: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // --- LÓGICA DO LAUNCHED EFFECT ---
     // Observa o estado do login
     LaunchedEffect(loginState) {
         when (val state = loginState) {
@@ -83,10 +80,9 @@ fun LoginScreen(
         }
     }
 
-    // --- NOVA INTERFACE GRÁFICA ---
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background // Fundo creme
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -97,17 +93,13 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- Logo/Ícone ---
-            // (Use R.drawable.ic_logo se você tiver um, senão use o placeholder abaixo)
+
             Image(
-                // ✅ SUBSTITUA 'nome_do_seu_arquivo' pelo nome que você deu ao seu PNG/JPG
                 painter = painterResource(id = R.drawable.logo_petcare),
                 contentDescription = "Logo PetCare",
                 modifier = Modifier
                     .size(120.dp)
                     .padding(bottom = 16.dp),
-                // Opcional: Se seu logo já tem cor, remova a linha colorFilter
-                // colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
 
             Text(
@@ -176,22 +168,17 @@ fun LoginScreen(
                 Divider(modifier = Modifier.weight(1f))
             }
 
-            // --- BOTÃO DO GOOGLE (Corrigido) ---
             OutlinedButton(
                 onClick = {
-                    // Chama o launcher que definimos lá em cima
                     googleSignInLauncher.launch(authViewModel.googleSignInClient.signInIntent)
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.Gray)
             ) {
-                // (Se você tiver um logo do google em R.drawable, use-o aqui)
-                // Image(painter = painterResource(id = R.drawable.ic_google_g), ...)
                 Text("G", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 8.dp))
                 Text("Entrar com Google", color = MaterialTheme.colorScheme.onSurface)
             }
-            // --- FIM DO BOTÃO GOOGLE ---
 
             Spacer(modifier = Modifier.height(24.dp))
 

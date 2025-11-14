@@ -49,7 +49,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         )
 
         val builder = NotificationCompat.Builder(this, channelId)
-            //.setSmallIcon(R.drawable.ic_notification) // Você precisará criar um ícone depois
             .setSmallIcon(android.R.drawable.ic_dialog_info) // Ícone genérico temporário
             .setContentTitle(title)
             .setContentText(body)
@@ -58,7 +57,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // A partir do Android Oreo (API 26), é obrigatório criar um canal de notificação
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,

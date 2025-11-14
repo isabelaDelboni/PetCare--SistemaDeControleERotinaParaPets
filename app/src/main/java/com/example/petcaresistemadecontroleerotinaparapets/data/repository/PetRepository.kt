@@ -20,11 +20,9 @@ class PetRepository @Inject constructor(
 
     suspend fun addPet(pet: Pet) {
         try {
-            // 1. Salva no Room e pega o ID
             val localId = petDao.insertPet(pet)
             val petComId = pet.copy(idPet = localId.toInt())
 
-            // 2. Tenta salvar no Firebase
             val userId = authService.getCurrentUserId()
             if (userId != null) {
                 val result = firestoreService.savePetRemote(petComId, userId)
@@ -38,7 +36,7 @@ class PetRepository @Inject constructor(
     }
 
     suspend fun updatePet(pet: Pet) {
-        petDao.updatePet(pet) // Atualiza local
+        petDao.updatePet(pet)
 
         val userId = authService.getCurrentUserId()
         if (userId != null) {
@@ -53,14 +51,12 @@ class PetRepository @Inject constructor(
 
     suspend fun deletePet(pet: Pet) {
         petDao.deletePet(pet)
-        // Opcional: Implementar delete remoto aqui
     }
 
     suspend fun getPetById(id: Int): Pet? {
         return petDao.getPetById(id)
     }
 
-    // ✅ ESSA É A FUNÇÃO QUE ESTAVA FALTANDO OU COM NOME ERRADO
     fun getPetsDoUsuario(): Flow<List<Pet>> {
         return authService.getUserIdFlow().flatMapLatest { userId ->
             if (userId == null) {

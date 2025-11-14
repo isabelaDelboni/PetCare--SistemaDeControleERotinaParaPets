@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PetDao {
-    // Lembre-se: Retornar Long para pegar o ID gerado
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPet(pet: Pet): Long
 
@@ -24,8 +23,6 @@ interface PetDao {
     @Delete
     suspend fun deletePet(pet: Pet)
 
-    // --- CORREÇÕES NAS QUERIES ABAIXO ---
-
     // Busca todos os pets de um usuário específico
     @Query("SELECT * FROM pets WHERE userId = :userId")
     fun getPetsDoUsuario(userId: String): Flow<List<Pet>>
@@ -35,7 +32,6 @@ interface PetDao {
     suspend fun getPetsByUser(userId: String): List<Pet>
 
     // Busca um pet específico pelo ID
-    // MUDAMOS AQUI: de 'WHERE petId' para 'WHERE idPet'
     @Query("SELECT * FROM pets WHERE idPet = :petId")
     suspend fun getPetById(petId: Int): Pet?
 

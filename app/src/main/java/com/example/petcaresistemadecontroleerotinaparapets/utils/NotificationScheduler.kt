@@ -17,10 +17,10 @@ class NotificationScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    @SuppressLint("ScheduleExactAlarm") // Permissão necessária no Android 12+
+    @SuppressLint("ScheduleExactAlarm")
     fun scheduleEventNotification(evento: Evento) {
         try {
-            // 1. Converter a String de data (DD/MM/AAAA) para Millisegundos
+            // Converter a String de data (DD/MM/AAAA) para Millisegundos
             val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val date = sdf.parse(evento.dataEvento)
 
@@ -70,9 +70,7 @@ class NotificationScheduler(private val context: Context) {
             Log.e("Scheduler", "Erro ao agendar: ${e.message}")
         }
     }
-    // ... (código anterior do scheduleEventNotification) ...
 
-    // ADICIONE ESTA FUNÇÃO NA CLASSE NotificationScheduler:
     fun cancelNotification(evento: Evento) {
         try {
             val intent = Intent(context, NotificationReceiver::class.java)

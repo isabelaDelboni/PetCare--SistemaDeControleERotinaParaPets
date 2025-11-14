@@ -84,7 +84,6 @@ fun RemindersScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    // ✅ CORREÇÃO: 'idEvento'
                     items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(evento)
                     }

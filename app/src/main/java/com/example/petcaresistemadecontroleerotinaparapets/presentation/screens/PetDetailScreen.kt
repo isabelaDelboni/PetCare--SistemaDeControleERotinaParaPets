@@ -33,14 +33,13 @@ fun PetDetailScreen(
     petViewModel: PetViewModel,
     eventoViewModel: EventoViewModel,
     onAddEventClick: () -> Unit,
-    onEditEventClick: (String) -> Unit // ✅ PARÂMETRO ADICIONADO
+    onEditEventClick: (String) -> Unit
 ) {
     val petIdInt = petId?.toIntOrNull()
     val pet by petViewModel.selectedPet.collectAsState()
     val eventos by eventoViewModel.eventos.collectAsState()
     val context = LocalContext.current
 
-    // --- LÓGICA DE EXCLUSÃO (RF01) ---
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog && pet != null) {
@@ -50,16 +49,14 @@ fun PetDetailScreen(
                 petViewModel.deletePet(pet!!)
                 showDeleteDialog = false
                 Toast.makeText(context, "${pet!!.nome} foi excluído.", Toast.LENGTH_SHORT).show()
-                navController.popBackStack() // Volta para a tela 'Meus Pets'
+                navController.popBackStack()
             },
             onDismiss = {
                 showDeleteDialog = false
             }
         )
     }
-    // --- FIM DA LÓGICA DE EXCLUSÃO ---
 
-    // --- LÓGICA DE EXCLUSÃO DE EVENTO ---
     var showDeleteEventoDialog by remember { mutableStateOf<Evento?>(null) }
 
     if (showDeleteEventoDialog != null) {
@@ -75,7 +72,6 @@ fun PetDetailScreen(
             }
         )
     }
-    // --- FIM DA ADIÇÃO ---
 
 
     LaunchedEffect(petIdInt) {
@@ -154,7 +150,6 @@ fun PetDetailScreen(
                     items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(
                             evento = evento,
-                            // ✅ CHAMADA ADICIONADA
                             onEditClick = {
                                 onEditEventClick(evento.idEvento.toString())
                             },
@@ -169,7 +164,6 @@ fun PetDetailScreen(
     }
 }
 
-// ... (Diálogo DeleteConfirmationDialog permanece o mesmo) ...
 @Composable
 private fun DeleteConfirmationDialog(
     petName: String,
@@ -198,7 +192,6 @@ private fun DeleteConfirmationDialog(
     )
 }
 
-// ... (Diálogo DeleteEventoConfirmationDialog permanece o mesmo) ...
 @Composable
 private fun DeleteEventoConfirmationDialog(
     evento: Evento,
@@ -228,7 +221,6 @@ private fun DeleteEventoConfirmationDialog(
 }
 
 
-// ... (PetInfoCard permanece o mesmo) ...
 @Composable
 private fun PetInfoCard(pet: Pet) {
     Card(
@@ -252,11 +244,10 @@ private fun PetInfoCard(pet: Pet) {
     }
 }
 
-// ✅ --- EventoCard ATUALIZADO (com botão de editar) ---
 @Composable
 private fun EventoCard(
     evento: Evento,
-    onEditClick: () -> Unit, // ✅ PARÂMETRO ADICIONADO
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -294,7 +285,6 @@ private fun EventoCard(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            // ✅ BOTÃO DE EDITAR ADICIONADO
             IconButton(onClick = onEditClick) {
                 Icon(
                     Icons.Default.Edit,
@@ -314,9 +304,6 @@ private fun EventoCard(
         }
     }
 }
-// --- FIM DA ATUALIZAÇÃO ---
-
-// ... (InfoLinha permanece o mesmo) ...
 @Composable
 private fun InfoLinha(label: String, valor: String) {
     Row {

@@ -26,9 +26,6 @@ class SyncWorker(
         return try {
             Log.d("SyncWorker", "Iniciando sincronização em segundo plano...")
 
-            // ------------------------------------------------------------
-            // 1. SINCRONIZAR PETS (Room -> Firebase)
-            // ------------------------------------------------------------
             val unsyncedPets = petDao.getUnsyncedPets()
 
             for (pet in unsyncedPets) {
@@ -53,9 +50,6 @@ class SyncWorker(
                 }
             }
 
-            // ------------------------------------------------------------
-            // 2. SINCRONIZAR EVENTOS (Room -> Firebase)
-            // ------------------------------------------------------------
             val unsyncedEventos = eventoDao.getUnsyncedEventos()
 
             for (evento in unsyncedEventos) {

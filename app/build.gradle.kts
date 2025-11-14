@@ -2,13 +2,10 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    // ❌ REMOVIDO: id("kotlin-kapt")
-    id("com.google.devtools.ksp") // ✅ ADICIONADO
+    id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
 }
-
-// ❌ Bloco 'kapt { ... }' removido
 
 android {
     namespace = "com.example.petcaresistemadecontroleerotinaparapets"
@@ -74,7 +71,6 @@ dependencies {
     // --- ROOM (Banco Local) ---
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    // ✅ MIGRADO DE 'kapt' PARA 'ksp'
     ksp("androidx.room:room-compiler:2.6.1")
 
     // --- FIREBASE (Autenticação e Banco Online) ---
@@ -90,7 +86,6 @@ dependencies {
 
     // --- HILT (Injeção de Dependência) ---
     implementation("com.google.dagger:hilt-android:2.52")
-    // ✅ MIGRADO DE 'kapt' PARA 'ksp'
     ksp("com.google.dagger:hilt-compiler:2.52")
 
     // --- ViewModel ---

@@ -49,7 +49,6 @@ fun AddPetScreen(
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        // Quando o usuário escolhe a foto, salvamos a URI aqui
         if (uri != null) {
             fotoUri = uri
         }
@@ -75,7 +74,6 @@ fun AddPetScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- ÁREA DA FOTO (Clicável) ---
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -83,7 +81,6 @@ fun AddPetScreen(
                     .background(Color.LightGray)
                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     .clickable {
-                        // Abre a galeria filtrando apenas imagens
                         photoPickerLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
@@ -91,7 +88,6 @@ fun AddPetScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (fotoUri != null) {
-                    // Se tem foto escolhida, mostra ela usando COIL
                     AsyncImage(
                         model = fotoUri,
                         contentDescription = "Foto do Pet",
@@ -99,7 +95,6 @@ fun AddPetScreen(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Se não tem, mostra ícone de câmera
                     Icon(
                         imageVector = Icons.Default.AddAPhoto,
                         contentDescription = "Adicionar Foto",
@@ -110,7 +105,6 @@ fun AddPetScreen(
             }
             Text("Toque para adicionar foto", style = MaterialTheme.typography.bodySmall)
 
-            // --- CAMPOS DE TEXTO ---
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
@@ -142,19 +136,17 @@ fun AddPetScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- BOTÃO SALVAR ---
             Button(
                 onClick = {
                     if (nome.isBlank() || especie.isBlank()) {
                         Toast.makeText(context, "Preencha nome e espécie!", Toast.LENGTH_SHORT).show()
                     } else {
-                        // Chama o ViewModel passando a foto
                         viewModel.adicionarPet(
                             nome = nome,
                             especie = especie,
                             raca = raca,
                             idade = idade.toIntOrNull() ?: 0,
-                            fotoUri = fotoUri // <--- Passamos a URI aqui
+                            fotoUri = fotoUri
                         )
                         Toast.makeText(context, "Salvando pet...", Toast.LENGTH_SHORT).show()
                         onPetSaved()

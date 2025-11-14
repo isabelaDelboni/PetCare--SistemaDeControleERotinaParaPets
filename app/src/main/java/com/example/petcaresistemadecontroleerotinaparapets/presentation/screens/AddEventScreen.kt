@@ -22,7 +22,7 @@ import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewM
 @Composable
 fun AddEventScreen(
     petId: String?,
-    eventoId: String?, // ✅ PARÂMETRO ADICIONADO
+    eventoId: String?,
     eventoViewModel: EventoViewModel,
     onEventSaved: () -> Unit
 ) {
@@ -49,8 +49,6 @@ fun AddEventScreen(
                 dataEvento = evento.dataEvento
                 observacoes = evento.observacoes ?: ""
 
-                // ✅✅✅ CORREÇÃO (Linhas 51, 52) ✅✅✅
-                // Agora 'evento.valor' existe
                 if (evento.tipoEvento == "Peso" && evento.valor != null) {
                     valorPeso = evento.valor.toString()
                 }
@@ -81,9 +79,6 @@ fun AddEventScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ... (Dropdown, Data, Peso, Observações - Sem mudanças aqui) ...
-
-            // --- Seletor de Tipo de Evento (Dropdown) ---
             ExposedDropdownMenuBox(
                 expanded = isDropdownExpanded,
                 onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }
@@ -141,7 +136,7 @@ fun AddEventScreen(
                 )
             }
 
-            // --- Campo de Observações ---
+            // Campo de Observações
             OutlinedTextField(
                 value = observacoes,
                 onValueChange = { observacoes = it },
@@ -154,8 +149,7 @@ fun AddEventScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Botão Salvar / Atualizar ---
-            // --- Botão Salvar / Atualizar ---
+            // Botão Salvar / Atualizar
             Button(
                 onClick = {
                     // Validações básicas
@@ -181,7 +175,6 @@ fun AddEventScreen(
                     val eventoParaSalvar = existingEvento
 
                     if (isEditMode && eventoParaSalvar != null) {
-                        // --- MODO EDIÇÃO ---
                         val eventoAtualizado = eventoParaSalvar.copy(
                             tipoEvento = tipoEvento,
                             dataEvento = dataEvento,
@@ -190,16 +183,13 @@ fun AddEventScreen(
                             valor = if (tipoEvento == "Peso") valorDouble else null
                         )
 
-                        // 1. Atualiza no banco
                         eventoViewModel.updateEvento(eventoAtualizado)
 
-                        // 2. Agenda a notificação (usando o objeto que acabamos de criar)
                         scheduler.scheduleEventNotification(eventoAtualizado)
 
                         Toast.makeText(context, "Evento atualizado e lembrete ajustado!", Toast.LENGTH_SHORT).show()
 
                     } else {
-                        // --- MODO ADIÇÃO ---
                         val novoEvento = Evento(
                             tipoEvento = tipoEvento,
                             dataEvento = dataEvento,
@@ -209,10 +199,8 @@ fun AddEventScreen(
                             valor = if (tipoEvento == "Peso") valorDouble else null
                         )
 
-                        // 1. Salva no banco
                         eventoViewModel.adicionarEvento(novoEvento)
 
-                        // 2. Agenda a notificação
                         scheduler.scheduleEventNotification(novoEvento)
 
                         Toast.makeText(context, "Evento salvo e lembrete criado!", Toast.LENGTH_SHORT).show()

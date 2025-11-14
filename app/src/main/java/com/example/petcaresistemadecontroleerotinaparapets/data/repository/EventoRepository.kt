@@ -15,28 +15,23 @@ import javax.inject.Singleton
 @Singleton
 class EventoRepository @Inject constructor(
     private val eventoDao: EventoDao,
-    private val petDao: PetDao, // Precisamos do PetDao para confirmar donos se necessário
+    private val petDao: PetDao,
     private val firestoreService: FirestoreService,
     private val authService: FirebaseAuthService
 ) {
 
     suspend fun adicionarEvento(evento: Evento) {
         try {
-            // 1. Salva no Room (Offline garantido)
             val localId = eventoDao.insertEvento(evento)
             val eventoSalvo = evento.copy(idEvento = localId.toInt())
             Log.d("EventoRepo", "Evento salvo localmente ID: $localId")
 
-            // 2. Tenta sincronizar com Firebase
             val userId = authService.getCurrentUserId()
 
-            // Só tenta enviar se tiver usuário logado
             if (userId != null) {
-                // Precisamos do petId para o caminho no Firestore
                 val result = firestoreService.saveEventoRemote(eventoSalvo, userId, evento.petId)
 
                 if (result.isSuccess) {
-                    // 3. Sucesso: Marca como sincronizado no Room
                     eventoDao.updateEvento(eventoSalvo.copy(isSynced = true))
                     Log.d("EventoRepo", "Evento sincronizado com sucesso!")
                 } else {
@@ -52,7 +47,6 @@ class EventoRepository @Inject constructor(
         // Atualiza local
         eventoDao.updateEvento(evento)
 
-        // Tenta remoto
         val userId = authService.getCurrentUserId()
         if (userId != null) {
             try {
@@ -61,7 +55,6 @@ class EventoRepository @Inject constructor(
                     eventoDao.updateEvento(evento.copy(isSynced = true))
                 }
             } catch (e: Exception) {
-                // Se falhar, garante que está marcado como false para o SyncWorker pegar depois
                 eventoDao.updateEvento(evento.copy(isSynced = false))
             }
         }

@@ -30,7 +30,7 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = startDestination) {
 
-        // --- Tela de Login ---
+        //  Tela de Login
         composable(ScreenRoutes.Login.route) {
             LoginScreen(
                 authViewModel = authViewModel,
@@ -45,7 +45,7 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela de Cadastro ---
+        // Tela de Cadastro
         composable(ScreenRoutes.SignUp.route) {
             SignUpScreen(
                 authViewModel = authViewModel,
@@ -60,7 +60,7 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela Meus Pets ---
+        // Tela Meus Pets
         composable(ScreenRoutes.MyPets.route) {
             MyPetsScreen(
                 petViewModel = petViewModel,
@@ -80,25 +80,8 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela Adicionar Pet (CORRIGIDA) ---
+        //  Tela Adicionar Pet
         composable(ScreenRoutes.AddPet.route) {
-            AddPetScreen(
-                viewModel = petViewModel, // Mudou de petViewModel para viewModel
-                onBackClick = { navController.popBackStack() }, // Adicionado
-                onPetSaved = {
-                    navController.popBackStack()
-                }
-                // authViewModel e petId foram removidos da AddPetScreen atual
-            )
-        }
-
-        // --- Tela Editar Pet ---
-        composable(
-            route = ScreenRoutes.EditPet.route,
-            arguments = listOf(navArgument("petId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            // NOTA: A AddPetScreen nova (com foto) ainda não tem a lógica de carregar edição.
-            // Estamos usando assim para não dar erro de compilação, mas ela vai abrir vazia por enquanto.
             AddPetScreen(
                 viewModel = petViewModel,
                 onBackClick = { navController.popBackStack() },
@@ -108,7 +91,20 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela Detalhes do Pet ---
+        // Tela Editar Pet
+        composable(
+            route = ScreenRoutes.EditPet.route,
+            arguments = listOf(navArgument("petId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            AddPetScreen(
+                viewModel = petViewModel,
+                onBackClick = { navController.popBackStack() },
+                onPetSaved = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(
             route = ScreenRoutes.PetDetail.route,
             arguments = listOf(navArgument("petId") { type = NavType.StringType })
@@ -130,7 +126,7 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela Adicionar Evento ---
+        // Tela Adicionar Evento
         composable(
             route = ScreenRoutes.AddEvent.route,
             arguments = listOf(navArgument("petId") { type = NavType.StringType })
@@ -145,14 +141,14 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela Editar Evento ---
+        // Tela Editar Evento
         composable(
             route = ScreenRoutes.EditEvent.route,
             arguments = listOf(navArgument("eventoId") { type = NavType.StringType })
         ) { backStackEntry ->
             AddEventScreen(
                 petId = null,
-                eventoId = backStackEntry.arguments?.getString("eventoId"), // MODO DE EDIÇÃO
+                eventoId = backStackEntry.arguments?.getString("eventoId"),
                 eventoViewModel = eventoViewModel,
                 onEventSaved = {
                     navController.popBackStack()
@@ -160,14 +156,14 @@ fun AppNavigation() {
             )
         }
 
-        // --- Tela de Lembretes ---
+        // Tela de Lembretes
         composable(ScreenRoutes.Reminders.route) {
             RemindersScreen(
                 navController = navController
             )
         }
 
-        // --- Tela de Configurações ---
+        // Tela de Configurações
         composable(ScreenRoutes.Settings.route) {
             SettingsScreen(
                 navController = navController,
@@ -182,9 +178,8 @@ fun AppNavigation() {
     }
 }
 
-// ... (resto do AppNavigation) ...
 
-// Objeto de Rotas (ATUALIZADO)
+// Objeto de Rotas
 object ScreenRoutes {
     object Login { val route = "login_screen" }
     object SignUp { val route = "signup_screen" }
@@ -197,7 +192,6 @@ object ScreenRoutes {
     object Reminders { val route = "reminders_screen" }
     object Settings { val route = "settings_screen" }
 
-    // --- LINHA ADICIONADA ---
     object Reports { val route = "reports_screen/{petId}" }
 
     // Funções auxiliares
@@ -205,7 +199,5 @@ object ScreenRoutes {
     fun editPet(petId: String) = "edit_pet_screen/$petId"
     fun addEvent(petId: String) = "add_event_screen/$petId"
     fun editEvent(eventoId: String) = "edit_event_screen/$eventoId"
-
-    // --- FUNÇÃO ADICIONADA ---
     fun reports(petId: String) = "reports_screen/$petId"
 }

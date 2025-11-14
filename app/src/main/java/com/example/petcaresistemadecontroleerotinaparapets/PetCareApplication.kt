@@ -11,7 +11,7 @@ import dagger.hilt.android.HiltAndroidApp
 class PetCareApplication : Application() {
 
     companion object {
-        const val CHANNEL_ID = "petcare_reminders" // (O mesmo ID do Receiver)
+        const val CHANNEL_ID = "petcare_reminders"
     }
 
     override fun onCreate() {

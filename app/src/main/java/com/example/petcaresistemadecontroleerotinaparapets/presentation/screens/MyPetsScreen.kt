@@ -90,13 +90,10 @@ private fun MyPetsContent(
                     }
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        // CORREÇÃO 1: key = { it.idPet } (era it.petId)
                         items(pets, key = { it.idPet }) { pet ->
                             PetCard(
                                 pet = pet,
-                                // CORREÇÃO 2: pet.idPet (era pet.petId)
                                 onClick = { onPetClick(pet.idPet.toString()) },
-                                // CORREÇÃO 3: pet.idPet (era pet.petId)
                                 onEditClick = { onEditPetClick(pet.idPet.toString()) }
                             )
                         }
@@ -121,21 +118,20 @@ private fun PetCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp), // Espaçamento lateral
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp), // Sombra mais forte
+            .padding(horizontal = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface // Ou uma cor específica tipo Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp) // Bordas bem redondinhas
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface) // Garante fundo branco/cor certa
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar do Pet (Círculo colorido)
             Surface(
                 modifier = Modifier.size(60.dp),
                 shape = androidx.compose.foundation.shape.CircleShape,
@@ -153,11 +149,10 @@ private fun PetCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Textos
             Column(modifier = Modifier.weight(1f).clickable(onClick = onClick)) {
                 Text(
                     text = pet.nome,
-                    style = MaterialTheme.typography.titleLarge, // Fonte maior
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -167,7 +162,6 @@ private fun PetCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                // Exemplo de chip de idade
                 Text(
                     text = "${pet.idade} anos",
                     style = MaterialTheme.typography.labelSmall,
@@ -175,7 +169,6 @@ private fun PetCard(
                 )
             }
 
-            // Botão de Editar (Discreto)
             IconButton(onClick = onEditClick) {
                 Icon(
                     imageVector = Icons.Default.Edit,

@@ -1,6 +1,5 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.components
 
-// ✅ Imports necessários para o botão
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.petcaresistemadecontroleerotinaparapets.R // ✅ Import para o R.drawable
 
 /**
- * Botão customizado para "Sign in with Google", seguindo as diretrizes de design.
+ * Botão customizado para "Sign in with Google".
  *
  * @param onClick Ação a ser executada quando o botão for clicado.
  * @param modifier Modificador para customização.
@@ -38,38 +37,35 @@ fun GoogleSignInButton(
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp), // Cantos levemente arredondados
-        border = BorderStroke(1.dp, Color.LightGray), // Borda cinza clara
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Color.LightGray),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White, // Fundo branco
-            contentColor = Color.Black // Texto/ícone preto (por padrão)
+            containerColor = Color.White,
+            contentColor = Color.Black
         )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start, // Alinha ao início
+            horizontalArrangement = Arrangement.Start,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 12.dp) // Padding interno
+                .padding(vertical = 8.dp, horizontal = 12.dp)
         ) {
             // Ícone do Google
             Icon(
-                // ✅ Referencia o drawable que você acabou de criar
                 painter = painterResource(id = R.drawable.ic_google_logo),
                 contentDescription = "Google Logo",
                 modifier = Modifier.size(24.dp),
-                tint = Color.Unspecified // IMPORTANTE: Impede o Compose de tingir o logo
+                tint = Color.Unspecified
             )
 
-            // Espaço entre o ícone e o texto
             Spacer(modifier = Modifier.width(24.dp))
 
-            // Texto do botão
             Text(
                 text = "Entrar com o Google",
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                color = Color.DarkGray // Cor do texto mais suave
+                color = Color.DarkGray
             )
         }
     }

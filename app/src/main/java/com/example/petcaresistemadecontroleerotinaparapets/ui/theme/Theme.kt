@@ -17,7 +17,7 @@ import androidx.core.view.WindowCompat
 
 // Configuração do Modo Escuro
 private val DarkColorScheme = darkColorScheme(
-    primary = OrangePrimary,        // Usamos o Laranja mesmo no escuro para manter identidade
+    primary = OrangePrimary,        // Laranja mesmo no escuro para manter identidade
     onPrimary = White,
     secondary = BlueSecondary,
     onSecondary = White,
@@ -34,7 +34,7 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = White,
     tertiary = OrangeLight,
 
-    background = BackgroundCream,   // Aquele fundo creme suave
+    background = BackgroundCream,   // Fundo creme suave
     surface = SurfaceWhite,         // Cards brancos
 
     onBackground = Black,
