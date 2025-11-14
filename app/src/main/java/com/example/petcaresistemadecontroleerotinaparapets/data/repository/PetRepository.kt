@@ -60,7 +60,6 @@ class PetRepository @Inject constructor(
         return petDao.getPetById(id)
     }
 
-    // ✅ ESSA É A FUNÇÃO QUE ESTAVA FALTANDO OU COM NOME ERRADO
     fun getPetsDoUsuario(): Flow<List<Pet>> {
         return authService.getUserIdFlow().flatMapLatest { userId ->
             if (userId == null) {

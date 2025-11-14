@@ -18,19 +18,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.d("FCM", "Mensagem recebida de: ${remoteMessage.from}")
 
-        // Se a notificação tiver dados payload, você pode tratar aqui
         if (remoteMessage.data.isNotEmpty()) {
             Log.d("FCM", "Dados da mensagem: ${remoteMessage.data}")
         }
 
-        // Se a notificação tiver corpo de notificação visual
+        //Notificação visual
         remoteMessage.notification?.let {
             Log.d("FCM", "Corpo da notificação: ${it.body}")
             mostrarNotificacao(it.title, it.body)
         }
     }
 
-    // Chamado se o token do dispositivo mudar (raro, mas acontece)
     override fun onNewToken(token: String) {
         Log.d("FCM", "Novo token gerado: $token")
         // TODO: Aqui você enviaria esse novo token para o seu servidor/Firestore

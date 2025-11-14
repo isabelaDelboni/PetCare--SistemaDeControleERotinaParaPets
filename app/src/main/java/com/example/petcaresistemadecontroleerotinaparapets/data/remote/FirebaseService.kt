@@ -8,11 +8,8 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject // <--- IMPORTANTE
 
-// ADICIONADO: @Inject constructor()
 class FirestoreService @Inject constructor() {
     private val db = FirebaseFirestore.getInstance()
-
-    // --- PETS ---
 
     suspend fun savePetRemote(pet: Pet, userId: String): Result<Boolean> {
         return try {
@@ -46,7 +43,6 @@ class FirestoreService @Inject constructor() {
         }
     }
 
-    // --- EVENTOS ---
 
     suspend fun saveEventoRemote(evento: Evento, userId: String, petId: Int): Result<Boolean> {
         return try {

@@ -17,7 +17,7 @@ import androidx.core.view.WindowCompat
 
 // Configuração do Modo Escuro
 private val DarkColorScheme = darkColorScheme(
-    primary = OrangePrimary,        // Usamos o Laranja mesmo no escuro para manter identidade
+    primary = OrangePrimary,      
     onPrimary = White,
     secondary = BlueSecondary,
     onSecondary = White,
@@ -34,8 +34,8 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = White,
     tertiary = OrangeLight,
 
-    background = BackgroundCream,   // Aquele fundo creme suave
-    surface = SurfaceWhite,         // Cards brancos
+    background = BackgroundCream,  
+    surface = SurfaceWhite,       
 
     onBackground = Black,
     onSurface = Black
@@ -44,8 +44,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun PetCareSistemaDeControleERotinaParaPetsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color é uma função do Android 12+ que usa a cor do papel de parede do usuário.
-    // Vamos deixar 'false' para forçar as cores do nosso app (Laranja/Azul).
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -62,16 +60,14 @@ fun PetCareSistemaDeControleERotinaParaPetsTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Pinta a barra de status (onde fica a bateria/hora) com a cor primária
             window.statusBarColor = colorScheme.primary.toArgb()
-            // Define se os ícones da barra de status devem ser claros ou escuros
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Certifique-se que o arquivo Type.kt existe
+        typography = Typography,
         content = content
     )
 }

@@ -34,7 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "petcare_database"
                 )
-                    .fallbackToDestructiveMigration() // Apaga o banco se mudar a versão (bom para dev)
+                    .fallbackToDestructiveMigration() // Apaga o banco se mudar a versão 
                     .build()
                 INSTANCE = instance
                 instance

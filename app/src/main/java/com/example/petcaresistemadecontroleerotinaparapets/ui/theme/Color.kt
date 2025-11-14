@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 val OrangePrimary = Color(0xFFFF9800)      // Laranja principal (botões, topo)
 val OrangeLight = Color(0xFFFFCC80)        // Laranja claro (detalhes)
 val BlueSecondary = Color(0xFF29B6F6)      // Azul (destaques secundários)
-val BackgroundCream = Color(0xFFFFF8E1)    // Fundo creme suave (muito usado em apps de pet)
+val BackgroundCream = Color(0xFFFFF8E1)    // Fundo creme
 val SurfaceWhite = Color(0xFFFFFFFF)       // Fundo dos cards
 
 val Black = Color(0xFF000000)

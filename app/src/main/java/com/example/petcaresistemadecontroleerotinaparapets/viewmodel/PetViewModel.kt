@@ -78,8 +78,6 @@ class PetViewModel @Inject constructor(
         }
     }
 
-    // --- FUNÇÕES NOVAS (Para corrigir os erros) ---
-
     // 1. Carrega um pet específico pelo ID e o coloca no StateFlow 'selectedPet'
     fun carregarPetPorId(petId: Int) {
         viewModelScope.launch {

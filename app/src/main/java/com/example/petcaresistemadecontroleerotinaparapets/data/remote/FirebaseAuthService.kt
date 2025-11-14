@@ -53,10 +53,8 @@ class FirebaseAuthService @Inject constructor() {
         auth.signOut()
     }
 
-    // --- NOVA FUNÇÃO PARA O GOOGLE ---
-    /**
-     * Troca o ID Token do Google por uma Credencial do Firebase e faz login.
-     */
+    // --- Backend para login com o google---
+
     suspend fun signInWithGoogleCredential(idToken: String): Result<FirebaseUser?> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)

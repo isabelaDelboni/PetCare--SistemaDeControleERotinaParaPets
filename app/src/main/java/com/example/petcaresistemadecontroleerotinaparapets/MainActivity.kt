@@ -26,9 +26,9 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            Log.d("FCM_PERMISSION", "✅ Permissão de notificações CONCEDIDA!")
+            Log.d("FCM_PERMISSION", "Permissão de notificações CONCEDIDA!")
         } else {
-            Log.d("FCM_PERMISSION", "❌ Permissão de notificações NEGADA.")
+            Log.d("FCM_PERMISSION", "Permissão de notificações NEGADA.")
         }
     }
 

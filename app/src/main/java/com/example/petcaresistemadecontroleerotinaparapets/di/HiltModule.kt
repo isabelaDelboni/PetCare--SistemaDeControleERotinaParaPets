@@ -31,10 +31,6 @@ object HiltModule {
             AppDatabase::class.java,
             "petcare_database"
         )
-            // ✅ ADICIONE ESTA LINHA:
-            // Isso diz ao Room: "Se você precisar migrar e não houver um
-            // script de migração, apenas apague tudo e comece de novo."
-            // Perfeito para desenvolvimento.
             .fallbackToDestructiveMigration()
             .build()
     }

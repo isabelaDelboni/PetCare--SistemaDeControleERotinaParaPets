@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.example.petcaresistemadecontroleerotinaparapets.R // (Crie R.drawable.ic_pet_notification se não existir)
+import com.example.petcaresistemadecontroleerotinaparapets.R 
 
 class ReminderBroadcastReceiver : BroadcastReceiver() {
 

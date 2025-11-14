@@ -48,7 +48,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14" // Compatível com Kotlin 2.0
+        kotlinCompilerExtensionVersion = "1.5.14" 
     }
 }
 
@@ -90,7 +90,6 @@ dependencies {
 
     // --- HILT (Injeção de Dependência) ---
     implementation("com.google.dagger:hilt-android:2.52")
-    // ✅ MIGRADO DE 'kapt' PARA 'ksp'
     ksp("com.google.dagger:hilt-compiler:2.52")
 
     // --- ViewModel ---

@@ -5,9 +5,8 @@ import android.util.Log
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
-import javax.inject.Inject // <--- IMPORTANTE
+import javax.inject.Inject 
 
-// ADICIONADO: @Inject constructor()
 class StorageService @Inject constructor() {
     private val storageRef = FirebaseStorage.getInstance().reference
 

@@ -32,7 +32,6 @@ interface EventoDao {
 
     /**
      * Busca todos os eventos de todos os pets de um usuário específico.
-     * CORREÇÃO: Trocamos P.petId por P.idPet no JOIN.
      */
     @Query("""
         SELECT E.* FROM eventos E 

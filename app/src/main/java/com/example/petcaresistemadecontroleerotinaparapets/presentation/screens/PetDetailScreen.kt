@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit // ✅ IMPORT ADICIONADO
+import androidx.compose.material.icons.filled.Edit 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,7 +33,7 @@ fun PetDetailScreen(
     petViewModel: PetViewModel,
     eventoViewModel: EventoViewModel,
     onAddEventClick: () -> Unit,
-    onEditEventClick: (String) -> Unit // ✅ PARÂMETRO ADICIONADO
+    onEditEventClick: (String) -> Unit 
 ) {
     val petIdInt = petId?.toIntOrNull()
     val pet by petViewModel.selectedPet.collectAsState()
@@ -154,7 +154,6 @@ fun PetDetailScreen(
                     items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(
                             evento = evento,
-                            // ✅ CHAMADA ADICIONADA
                             onEditClick = {
                                 onEditEventClick(evento.idEvento.toString())
                             },
@@ -228,7 +227,6 @@ private fun DeleteEventoConfirmationDialog(
 }
 
 
-// ... (PetInfoCard permanece o mesmo) ...
 @Composable
 private fun PetInfoCard(pet: Pet) {
     Card(
@@ -252,11 +250,10 @@ private fun PetInfoCard(pet: Pet) {
     }
 }
 
-// ✅ --- EventoCard ATUALIZADO (com botão de editar) ---
 @Composable
 private fun EventoCard(
     evento: Evento,
-    onEditClick: () -> Unit, // ✅ PARÂMETRO ADICIONADO
+    onEditClick: () -> Unit, 
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -294,7 +291,6 @@ private fun EventoCard(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            // ✅ BOTÃO DE EDITAR ADICIONADO
             IconButton(onClick = onEditClick) {
                 Icon(
                     Icons.Default.Edit,

@@ -60,8 +60,7 @@ class SyncWorker(
 
             for (evento in unsyncedEventos) {
                 try {
-                    // PROBLEMA: O Evento só tem o petId, mas o Firestore precisa do userId.
-                    // SOLUÇÃO: Buscamos o Pet no banco para pegar o userId dele.
+                    // Busca o Pet no banco para pegar o userId dele.
                     val petDono = petDao.getPetById(evento.petId)
 
                     if (petDono != null && petDono.userId.isNotBlank()) {

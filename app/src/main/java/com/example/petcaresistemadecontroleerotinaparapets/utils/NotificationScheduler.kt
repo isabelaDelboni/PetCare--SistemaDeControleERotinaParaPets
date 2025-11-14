@@ -70,9 +70,7 @@ class NotificationScheduler(private val context: Context) {
             Log.e("Scheduler", "Erro ao agendar: ${e.message}")
         }
     }
-    // ... (código anterior do scheduleEventNotification) ...
 
-    // ADICIONE ESTA FUNÇÃO NA CLASSE NotificationScheduler:
     fun cancelNotification(evento: Evento) {
         try {
             val intent = Intent(context, NotificationReceiver::class.java)

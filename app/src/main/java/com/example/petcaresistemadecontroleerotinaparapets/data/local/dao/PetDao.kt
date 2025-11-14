@@ -24,8 +24,6 @@ interface PetDao {
     @Delete
     suspend fun deletePet(pet: Pet)
 
-    // --- CORREÇÕES NAS QUERIES ABAIXO ---
-
     // Busca todos os pets de um usuário específico
     @Query("SELECT * FROM pets WHERE userId = :userId")
     fun getPetsDoUsuario(userId: String): Flow<List<Pet>>

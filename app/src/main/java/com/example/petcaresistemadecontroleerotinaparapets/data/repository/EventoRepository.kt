@@ -69,7 +69,7 @@ class EventoRepository @Inject constructor(
 
     suspend fun excluirEvento(evento: Evento) {
         eventoDao.deleteEvento(evento)
-        // TODO: Implementar delete no FirestoreService se necessário no futuro
+        // Implementar delete no FirestoreService se necessário no futuro
     }
 
     suspend fun getEventoById(id: Int): Evento? {

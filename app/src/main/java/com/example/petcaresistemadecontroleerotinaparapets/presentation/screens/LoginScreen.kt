@@ -100,7 +100,6 @@ fun LoginScreen(
             // --- Logo/Ícone ---
             // (Use R.drawable.ic_logo se você tiver um, senão use o placeholder abaixo)
             Image(
-                // ✅ SUBSTITUA 'nome_do_seu_arquivo' pelo nome que você deu ao seu PNG/JPG
                 painter = painterResource(id = R.drawable.logo_petcare),
                 contentDescription = "Logo PetCare",
                 modifier = Modifier

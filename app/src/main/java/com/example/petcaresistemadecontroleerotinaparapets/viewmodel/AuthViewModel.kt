@@ -26,8 +26,6 @@ class AuthViewModel @Inject constructor(
     val googleSignInClient: GoogleSignInClient
 
     init {
-        // --- ATENÇÃO: COLE O SEU WEB CLIENT ID ABAIXO ---
-        // Pegue no Firebase Console -> Authentication -> Google -> Web SDK Configuration
         val webClientId = "301129245613-lijf67i6e1hjjqmmikmd7j53urher41c.apps.googleusercontent.com"
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

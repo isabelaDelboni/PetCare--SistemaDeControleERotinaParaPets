@@ -22,7 +22,7 @@ import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewM
 @Composable
 fun AddEventScreen(
     petId: String?,
-    eventoId: String?, // ✅ PARÂMETRO ADICIONADO
+    eventoId: String?, 
     eventoViewModel: EventoViewModel,
     onEventSaved: () -> Unit
 ) {
@@ -49,8 +49,6 @@ fun AddEventScreen(
                 dataEvento = evento.dataEvento
                 observacoes = evento.observacoes ?: ""
 
-                // ✅✅✅ CORREÇÃO (Linhas 51, 52) ✅✅✅
-                // Agora 'evento.valor' existe
                 if (evento.tipoEvento == "Peso" && evento.valor != null) {
                     valorPeso = evento.valor.toString()
                 }

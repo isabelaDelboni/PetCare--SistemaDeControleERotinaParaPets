@@ -64,7 +64,6 @@ class EventoViewModel @Inject constructor(
         }
     }
 
-    // ✅ FUNÇÃO ADICIONADA
     suspend fun getEventoParaEdicao(eventoId: Int): Evento? {
         return eventoRepository.getEventoById(eventoId)
     }

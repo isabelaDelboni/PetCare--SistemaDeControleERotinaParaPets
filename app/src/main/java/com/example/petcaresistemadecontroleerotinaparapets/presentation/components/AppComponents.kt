@@ -1,6 +1,5 @@
 package com.example.petcaresistemadecontroleerotinaparapets.presentation.components
 
-// ✅ Imports necessários para o botão
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.petcaresistemadecontroleerotinaparapets.R // ✅ Import para o R.drawable
+import com.example.petcaresistemadecontroleerotinaparapets.R 
 
 /**
  * Botão customizado para "Sign in with Google", seguindo as diretrizes de design.
@@ -54,7 +53,6 @@ fun GoogleSignInButton(
         ) {
             // Ícone do Google
             Icon(
-                // ✅ Referencia o drawable que você acabou de criar
                 painter = painterResource(id = R.drawable.ic_google_logo),
                 contentDescription = "Google Logo",
                 modifier = Modifier.size(24.dp),
@@ -69,7 +67,7 @@ fun GoogleSignInButton(
                 text = "Entrar com o Google",
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                color = Color.DarkGray // Cor do texto mais suave
+                color = Color.DarkGray
             )
         }
     }

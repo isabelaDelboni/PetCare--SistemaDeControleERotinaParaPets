@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento // ✅ IMPORT ADICIONADO
+import com.example.petcaresistemadecontroleerotinaparapets.data.local.entities.Evento 
 import com.example.petcaresistemadecontroleerotinaparapets.viewmodel.EventoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +84,6 @@ fun RemindersScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    // ✅ CORREÇÃO: 'idEvento'
                     items(eventos, key = { it.idEvento }) { evento ->
                         EventoCard(evento)
                     }
