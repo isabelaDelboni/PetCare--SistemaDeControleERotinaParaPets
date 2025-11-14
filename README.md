@@ -233,9 +233,10 @@ Criar App Bundle:
 ./gradlew bundleRelease
 ```
 
-Após isso, o arquivo surge em: `app/build/outputs/`
+Após isso, o arquivo surge em: 
 
-```
+```bash
+app/build/outputs/
 ```
 
 ---
