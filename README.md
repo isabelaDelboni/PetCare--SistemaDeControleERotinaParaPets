@@ -377,6 +377,8 @@ O fluxo abaixo representa a navegação real do aplicativo, mostrando como o usu
 
 ### 📥 Importar o Fluxo de Telas (Draw.io / Diagrams.net)
 
+<img width="912" height="392" alt="image" src="https://github.com/user-attachments/assets/861c7cdb-2ebd-4f0f-9f4f-ea7e6a0df77a" />
+
 <img width="1261" height="381" alt="Diagrama de Navegação entre Activitie 2 drawio" src="https://github.com/user-attachments/assets/05e54344-6888-41a4-80ae-e5aed3f02001" />
 
 
@@ -402,6 +404,8 @@ Este diagrama representa a estrutura lógica do banco de dados, exibindo **entid
 * Um **usuário** possui apenas **um relatório consolidado** (1:1).
 
 ### 📥 Importar ER (Draw.io / Diagrams.net)
+
+<img width="677" height="440" alt="image" src="https://github.com/user-attachments/assets/b40c21a9-f9f8-4a75-8bc6-0da9e724470b" />
 
 <img width="981" height="421" alt="Diagrama entidade 2 drawio" src="https://github.com/user-attachments/assets/2b5a845e-13f8-4bd4-adb4-685dac754018" />
 
