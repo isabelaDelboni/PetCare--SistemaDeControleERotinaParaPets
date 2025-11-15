@@ -2,7 +2,7 @@
 
 * David Rocha - 31661831
 * Isabela Delboni - 32599048 
-* Mateus H. Escolaro - 25672614David Rocha - 31661831
+* Mateus H. Escolaro - 25672614
 
 Aplicativo Android para organização e monitoramento da rotina de animais de estimação.
 
